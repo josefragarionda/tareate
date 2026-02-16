@@ -180,13 +180,13 @@
             100% { transform: scale(1); }
         }
 
-        /* Barra de progreso coloreada */
+        /* Barra de progreso coloreada (empieza después de la zona de rachas) */
         .task-progress {
             position: absolute;
             top: 0;
-            left: 0;
+            left: 80px; /* empieza después de la zona blanca de rachas */
             height: 100%;
-            border-radius: 14px;
+            border-radius: 0 14px 14px 0;
             transition: width 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             opacity: 0.85;
         }
@@ -198,16 +198,21 @@
             display: flex;
             align-items: center;
             height: 100%;
-            padding: 0 14px;
+            padding: 0 14px 0 8px;
         }
 
-        /* Sección izquierda: Rachas */
+        /* Sección izquierda: Rachas con fondo blanco */
         .task-streaks {
-            width: 52px;
+            width: 58px;
             display: flex;
             flex-direction: column;
             gap: 4px;
             flex-shrink: 0;
+            background: rgba(255,255,255,0.95);
+            border-radius: 12px;
+            padding: 8px 6px;
+            position: relative;
+            z-index: 3;
         }
 
         .streak-row {
@@ -224,18 +229,17 @@
 
         .streak-value {
             font-size: 12px;
-            font-weight: 600;
+            font-weight: 700;
         }
 
         .streak-positive .streak-icon,
         .streak-positive .streak-value {
-            color: #2ECC71;
+            color: #1B8C4E;
         }
 
         .streak-negative .streak-icon,
         .streak-negative .streak-value {
-            color: #E74C3C;
-            opacity: 0.8;
+            color: #C0392B;
         }
 
         /* Sección centro: Nombre + Contador */
@@ -283,9 +287,9 @@
             opacity: 0.7;
         }
 
-        /* Sección derecha: espacio simétrico */
+        /* Sección derecha: espacio */
         .task-right {
-            width: 52px;
+            width: 14px;
             flex-shrink: 0;
         }
 
@@ -992,7 +996,7 @@
 
             html += `
                 <div class="task-bar" data-id="${task.id}" onclick="tapTask('${task.id}')">
-                    <div class="task-progress" style="width: ${pct}%; background: linear-gradient(90deg, ${task.colorHex}cc, ${task.colorHex});"></div>
+                    <div class="task-progress" style="width: calc((100% - 80px) * ${progress}); background: linear-gradient(90deg, ${task.colorHex}cc, ${task.colorHex});"></div>
                     <div class="task-content">
                         <div class="task-streaks">
                             <div class="streak-row streak-positive">
