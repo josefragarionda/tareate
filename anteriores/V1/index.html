@@ -1,0 +1,1329 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>TaskCounter</title>
+
+    <!-- PWA Meta Tags para iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="TaskCounter">
+    <meta name="theme-color" content="#1A1A2E">
+
+    <!-- Manifest PWA -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- Icono para iOS (se genera inline como SVG data URI) -->
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%231A1A2E'/><text x='90' y='115' font-size='80' text-anchor='middle' fill='%234A90D9'>✓</text></svg>">
+
+    <style>
+        /* ============================================
+           RESET & BASE
+           ============================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        :root {
+            --bg-primary: #1A1A2E;
+            --bg-secondary: #16213E;
+            --bg-card: #2C2C3E;
+            --text-primary: #FFFFFF;
+            --text-secondary: rgba(255,255,255,0.7);
+            --text-muted: rgba(255,255,255,0.4);
+            --bar-height: 82px;
+            --safe-top: env(safe-area-inset-top, 0px);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            min-height: 100dvh;
+            overflow-x: hidden;
+        }
+
+        /* ============================================
+           HEADER / NAVBAR
+           ============================================ */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: var(--bg-secondary);
+            padding-top: var(--safe-top);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .navbar-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 18px;
+        }
+
+        .navbar-title {
+            font-size: 17px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        .nav-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: rgba(255,255,255,0.08);
+            border-radius: 10px;
+            color: white;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:active {
+            transform: scale(0.9);
+            background: rgba(255,255,255,0.15);
+        }
+
+        /* ============================================
+           CONTENIDO PRINCIPAL
+           ============================================ */
+        .content {
+            padding-top: calc(60px + var(--safe-top));
+            padding-bottom: calc(20px + var(--safe-bottom));
+            padding-left: 16px;
+            padding-right: 16px;
+            min-height: 100vh;
+            min-height: 100dvh;
+        }
+
+        /* ============================================
+           ESTADO VACÍO
+           ============================================ */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 60vh;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        .empty-state .icon {
+            font-size: 60px;
+            margin-bottom: 16px;
+            opacity: 0.3;
+        }
+
+        .empty-state h2 {
+            font-size: 20px;
+            margin-bottom: 8px;
+            opacity: 0.5;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+            opacity: 0.3;
+        }
+
+        /* ============================================
+           BARRAS DE TAREA
+           ============================================ */
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding-top: 10px;
+        }
+
+        .task-bar {
+            position: relative;
+            height: var(--bar-height);
+            background: var(--bg-card);
+            border-radius: 14px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        box-shadow 0.2s ease;
+            will-change: transform;
+        }
+
+        .task-bar:active {
+            transform: scale(0.97);
+        }
+
+        .task-bar.tapped {
+            animation: tapPulse 0.35s ease-out;
+        }
+
+        @keyframes tapPulse {
+            0%   { transform: scale(1); }
+            30%  { transform: scale(0.95); }
+            60%  { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        /* Barra de progreso coloreada */
+        .task-progress {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            border-radius: 14px;
+            transition: width 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            opacity: 0.85;
+        }
+
+        /* Contenido encima de la barra */
+        .task-content {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            height: 100%;
+            padding: 0 14px;
+        }
+
+        /* Sección izquierda: Rachas */
+        .task-streaks {
+            width: 52px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        .streak-row {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .streak-icon {
+            font-size: 11px;
+            width: 14px;
+            text-align: center;
+        }
+
+        .streak-value {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .streak-positive .streak-icon,
+        .streak-positive .streak-value {
+            color: #2ECC71;
+        }
+
+        .streak-negative .streak-icon,
+        .streak-negative .streak-value {
+            color: #E74C3C;
+            opacity: 0.8;
+        }
+
+        /* Sección centro: Nombre + Contador */
+        .task-center {
+            flex: 1;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1px;
+        }
+
+        .task-name {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            max-width: 180px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .task-counter {
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+        }
+
+        .task-count {
+            font-size: 36px;
+            font-weight: 800;
+            line-height: 1;
+            letter-spacing: -1px;
+        }
+
+        .task-separator {
+            font-size: 18px;
+            font-weight: 300;
+            opacity: 0.4;
+        }
+
+        .task-goal {
+            font-size: 18px;
+            font-weight: 600;
+            opacity: 0.7;
+        }
+
+        /* Sección derecha: espacio simétrico */
+        .task-right {
+            width: 52px;
+            flex-shrink: 0;
+        }
+
+        /* Indicador +1 flotante */
+        .plus-one {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 28px;
+            font-weight: 800;
+            color: white;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            pointer-events: none;
+            opacity: 0;
+            z-index: 10;
+        }
+
+        .plus-one.show {
+            animation: floatUp 0.7s ease-out forwards;
+        }
+
+        @keyframes floatUp {
+            0%   { opacity: 1; transform: translate(-50%, -50%) scale(0.5); }
+            50%  { opacity: 1; transform: translate(-50%, -100%) scale(1.1); }
+            100% { opacity: 0; transform: translate(-50%, -160%) scale(0.8); }
+        }
+
+        /* ============================================
+           MODAL / OVERLAY
+           ============================================ */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 200;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal {
+            background: var(--bg-primary);
+            width: 100%;
+            max-width: 500px;
+            max-height: 88vh;
+            border-radius: 20px 20px 0 0;
+            overflow-y: auto;
+            transform: translateY(100%);
+            transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            padding-bottom: calc(20px + var(--safe-bottom));
+        }
+
+        .modal-overlay.active .modal {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 20px 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            position: sticky;
+            top: 0;
+            background: var(--bg-primary);
+            z-index: 5;
+        }
+
+        .modal-header h2 {
+            font-size: 17px;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            width: 30px;
+            height: 30px;
+            border: none;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-body {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+        }
+
+        /* ============================================
+           FORMULARIOS
+           ============================================ */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px;
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 10px;
+            color: white;
+            font-size: 16px;
+            font-family: inherit;
+            outline: none;
+            -webkit-appearance: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus {
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        /* Selector de colores */
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+        }
+
+        .color-option {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .color-option:active {
+            transform: scale(0.9);
+        }
+
+        .color-option.selected {
+            border-color: white;
+            transform: scale(1.12);
+            box-shadow: 0 0 12px rgba(255,255,255,0.3);
+        }
+
+        /* Vista previa */
+        .preview-bar {
+            height: 70px;
+            background: var(--bg-card);
+            border-radius: 14px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .preview-fill {
+            height: 100%;
+            border-radius: 14px;
+            width: 35%;
+            opacity: 0.7;
+            transition: background 0.3s;
+        }
+
+        .preview-content {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .preview-name {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .preview-counter {
+            font-size: 26px;
+            font-weight: 800;
+        }
+
+        /* Botones de acción */
+        .btn-primary {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .btn-primary:active {
+            transform: scale(0.97);
+            filter: brightness(0.9);
+        }
+
+        .btn-danger {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #E74C3C;
+            background: rgba(231, 76, 60, 0.1);
+            cursor: pointer;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-reset {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #F39C12;
+            background: rgba(243, 156, 18, 0.1);
+            cursor: pointer;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-danger:active, .btn-reset:active {
+            transform: scale(0.97);
+        }
+
+        /* Estadísticas en editar */
+        .stats-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .stat-box {
+            flex: 1;
+            text-align: center;
+            padding: 12px 8px;
+            background: var(--bg-card);
+            border-radius: 10px;
+        }
+
+        .stat-box .stat-icon {
+            font-size: 16px;
+            display: block;
+            margin-bottom: 4px;
+            opacity: 0.5;
+        }
+
+        .stat-box .stat-value {
+            font-size: 22px;
+            font-weight: 800;
+            display: block;
+        }
+
+        .stat-box .stat-label {
+            font-size: 10px;
+            color: var(--text-muted);
+            display: block;
+            margin-top: 2px;
+        }
+
+        /* Modal editar - seleccionar tarea */
+        .edit-task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .edit-task-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px;
+            background: var(--bg-card);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .edit-task-item:active {
+            transform: scale(0.97);
+            background: rgba(255,255,255,0.08);
+        }
+
+        .edit-task-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .edit-task-info {
+            flex: 1;
+        }
+
+        .edit-task-name {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .edit-task-meta {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .edit-task-arrow {
+            opacity: 0.3;
+            font-size: 14px;
+        }
+
+        /* ============================================
+           CONFIRM DIALOG
+           ============================================ */
+        .confirm-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 300;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+
+        .confirm-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .confirm-box {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 24px;
+            width: 100%;
+            max-width: 320px;
+            text-align: center;
+        }
+
+        .confirm-box h3 {
+            font-size: 17px;
+            margin-bottom: 8px;
+        }
+
+        .confirm-box p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .confirm-btns {
+            display: flex;
+            gap: 10px;
+        }
+
+        .confirm-btns button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .btn-cancel {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .btn-confirm-delete {
+            background: #E74C3C;
+            color: white;
+        }
+
+        .btn-confirm-reset {
+            background: #F39C12;
+            color: white;
+        }
+
+        /* ============================================
+           ANIMACIÓN DE REORDEN
+           ============================================ */
+        .task-bar {
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        box-shadow 0.2s ease,
+                        opacity 0.3s ease;
+        }
+
+        /* Scrollbar sutil */
+        ::-webkit-scrollbar {
+            width: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="navbar-inner">
+            <button class="nav-btn" id="btnEdit" title="Editar">
+                ☰
+            </button>
+            <span class="navbar-title">Mis Tareas</span>
+            <button class="nav-btn" id="btnAdd" title="Añadir">
+                ＋
+            </button>
+        </div>
+    </nav>
+
+    <!-- CONTENIDO -->
+    <main class="content" id="mainContent">
+        <!-- Se rellena con JavaScript -->
+    </main>
+
+    <!-- MODAL: Añadir/Editar tarea -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal" id="modal">
+            <div class="modal-header">
+                <h2 id="modalTitle">Nueva Tarea</h2>
+                <button class="modal-close" id="modalClose">✕</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Se rellena dinámicamente -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Lista de tareas para editar -->
+    <div class="modal-overlay" id="editListOverlay">
+        <div class="modal" id="editListModal">
+            <div class="modal-header">
+                <h2>Editar Tarea</h2>
+                <button class="modal-close" id="editListClose">✕</button>
+            </div>
+            <div class="modal-body" id="editListBody">
+                <!-- Se rellena dinámicamente -->
+            </div>
+        </div>
+    </div>
+
+    <!-- CONFIRM DIALOG -->
+    <div class="confirm-overlay" id="confirmOverlay">
+        <div class="confirm-box" id="confirmBox">
+            <h3 id="confirmTitle"></h3>
+            <p id="confirmMsg"></p>
+            <div class="confirm-btns">
+                <button class="btn-cancel" id="confirmCancel">Cancelar</button>
+                <button id="confirmAction"></button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // ============================================
+    // APP STATE
+    // ============================================
+    const STORAGE_KEY = 'taskCounter_v2';
+
+    const PRESET_COLORS = [
+        { name: 'Azul',      hex: '#4A90D9' },
+        { name: 'Rojo',      hex: '#E74C3C' },
+        { name: 'Verde',     hex: '#2ECC71' },
+        { name: 'Naranja',   hex: '#F39C12' },
+        { name: 'Morado',    hex: '#9B59B6' },
+        { name: 'Rosa',      hex: '#E91E8A' },
+        { name: 'Turquesa',  hex: '#1ABC9C' },
+        { name: 'Amarillo',  hex: '#F1C40F' },
+        { name: 'Gris',      hex: '#7F8C8D' },
+        { name: 'Marrón',    hex: '#8B4513' },
+        { name: 'Coral',     hex: '#FF6B6B' },
+        { name: 'Índigo',    hex: '#3F51B5' },
+    ];
+
+    let tasks = [];
+
+    // ============================================
+    // UTILIDADES
+    // ============================================
+    function generateId() {
+        return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+    }
+
+    function todayStr() {
+        const d = new Date();
+        return d.getFullYear() + '-' +
+               String(d.getMonth() + 1).padStart(2, '0') + '-' +
+               String(d.getDate()).padStart(2, '0');
+    }
+
+    function daysBetween(dateStr1, dateStr2) {
+        const d1 = new Date(dateStr1 + 'T00:00:00');
+        const d2 = new Date(dateStr2 + 'T00:00:00');
+        return Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
+    }
+
+    // ============================================
+    // PERSISTENCIA LOCAL
+    // ============================================
+    function save() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    }
+
+    function load() {
+        try {
+            const data = localStorage.getItem(STORAGE_KEY);
+            if (data) tasks = JSON.parse(data);
+        } catch(e) {
+            tasks = [];
+        }
+    }
+
+    // ============================================
+    // LÓGICA DE RACHAS
+    // ============================================
+    function updateAllStreaks() {
+        const today = todayStr();
+        tasks.forEach(t => {
+            if (t.lastTapDate) {
+                const diff = daysBetween(t.lastTapDate, today);
+                if (diff > 1) {
+                    t.streakPositive = 0;
+                    t.streakNegative = diff;
+                } else if (diff === 1) {
+                    t.streakNegative = 1;
+                }
+            }
+        });
+        save();
+    }
+
+    // ============================================
+    // TAP EN TAREA
+    // ============================================
+    function tapTask(id) {
+        const task = tasks.find(t => t.id === id);
+        if (!task) return;
+
+        const today = todayStr();
+
+        task.count++;
+
+        if (task.lastTapDate) {
+            const diff = daysBetween(task.lastTapDate, today);
+            if (diff === 0) {
+                // Ya se dio hoy, solo suma
+            } else if (diff === 1) {
+                task.streakPositive++;
+                task.streakNegative = 0;
+            } else {
+                task.streakPositive = 1;
+                task.streakNegative = 0;
+            }
+        } else {
+            task.streakPositive = 1;
+            task.streakNegative = 0;
+        }
+
+        task.lastTapDate = today;
+        sortTasks();
+        save();
+        render();
+
+        // Animación +1
+        const barEl = document.querySelector(`[data-id="${id}"]`);
+        if (barEl) {
+            barEl.classList.add('tapped');
+            const plusEl = barEl.querySelector('.plus-one');
+            if (plusEl) {
+                plusEl.classList.remove('show');
+                void plusEl.offsetWidth; // forzar reflow
+                plusEl.classList.add('show');
+            }
+            setTimeout(() => barEl.classList.remove('tapped'), 400);
+        }
+
+        // Vibración háptica si disponible
+        if (navigator.vibrate) navigator.vibrate(15);
+    }
+
+    // ============================================
+    // ORDENAR
+    // ============================================
+    function sortTasks() {
+        tasks.sort((a, b) => b.count - a.count);
+    }
+
+    // ============================================
+    // AÑADIR TAREA
+    // ============================================
+    function addTask(name, goal, colorHex) {
+        tasks.push({
+            id: generateId(),
+            name: name || 'Sin nombre',
+            count: 0,
+            goal: Math.max(goal, 1),
+            colorHex: colorHex,
+            streakPositive: 0,
+            streakNegative: 0,
+            lastTapDate: null,
+            createdDate: todayStr()
+        });
+        sortTasks();
+        save();
+        render();
+    }
+
+    // ============================================
+    // EDITAR TAREA
+    // ============================================
+    function updateTask(id, name, goal, colorHex) {
+        const task = tasks.find(t => t.id === id);
+        if (!task) return;
+        task.name = name || task.name;
+        task.goal = Math.max(goal, 1);
+        task.colorHex = colorHex;
+        save();
+        render();
+    }
+
+    function deleteTask(id) {
+        tasks = tasks.filter(t => t.id !== id);
+        save();
+        render();
+    }
+
+    function resetTask(id) {
+        const task = tasks.find(t => t.id === id);
+        if (!task) return;
+        task.count = 0;
+        task.streakPositive = 0;
+        task.streakNegative = 0;
+        task.lastTapDate = null;
+        sortTasks();
+        save();
+        render();
+    }
+
+    // ============================================
+    // RENDERIZADO
+    // ============================================
+    function render() {
+        const main = document.getElementById('mainContent');
+
+        if (tasks.length === 0) {
+            main.innerHTML = `
+                <div class="empty-state">
+                    <div class="icon">＋</div>
+                    <h2>Sin tareas</h2>
+                    <p>Pulsa ＋ para añadir tu primera tarea</p>
+                </div>
+            `;
+            document.getElementById('btnEdit').style.visibility = 'hidden';
+            return;
+        }
+
+        document.getElementById('btnEdit').style.visibility = 'visible';
+
+        let html = '<div class="task-list">';
+
+        tasks.forEach(task => {
+            const progress = task.goal > 0 ? Math.min(task.count / task.goal, 1) : 0;
+            const pct = (progress * 100).toFixed(1);
+
+            html += `
+                <div class="task-bar" data-id="${task.id}" onclick="tapTask('${task.id}')">
+                    <div class="task-progress" style="width: ${pct}%; background: linear-gradient(90deg, ${task.colorHex}cc, ${task.colorHex});"></div>
+                    <div class="task-content">
+                        <div class="task-streaks">
+                            <div class="streak-row streak-positive">
+                                <span class="streak-icon">🔥</span>
+                                <span class="streak-value">${task.streakPositive}</span>
+                            </div>
+                            <div class="streak-row streak-negative">
+                                <span class="streak-icon">🌙</span>
+                                <span class="streak-value">${task.streakNegative}</span>
+                            </div>
+                        </div>
+                        <div class="task-center">
+                            <div class="task-name">${escapeHtml(task.name)}</div>
+                            <div class="task-counter">
+                                <span class="task-count">${task.count}</span>
+                                <span class="task-separator">/</span>
+                                <span class="task-goal">${task.goal}</span>
+                            </div>
+                        </div>
+                        <div class="task-right"></div>
+                    </div>
+                    <div class="plus-one">+1</div>
+                </div>
+            `;
+        });
+
+        html += '</div>';
+        main.innerHTML = html;
+    }
+
+    function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    // ============================================
+    // MODAL: AÑADIR
+    // ============================================
+    function showAddModal() {
+        const overlay = document.getElementById('modalOverlay');
+        const title = document.getElementById('modalTitle');
+        const body = document.getElementById('modalBody');
+
+        title.textContent = 'Nueva Tarea';
+
+        let selectedColor = PRESET_COLORS[0].hex;
+
+        body.innerHTML = `
+            <div class="form-group">
+                <label class="form-label">Nombre de la tarea</label>
+                <input type="text" class="form-input" id="inputName" placeholder="Ej: Ejercicio, Lectura..." maxlength="30">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Objetivo total</label>
+                <input type="number" class="form-input" id="inputGoal" placeholder="100" value="100" min="1" inputmode="numeric">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Color de la barra</label>
+                <div class="color-grid" id="colorGrid">
+                    ${PRESET_COLORS.map((c, i) =>
+                        `<div class="color-option ${i === 0 ? 'selected' : ''}"
+                              data-hex="${c.hex}"
+                              style="background:${c.hex}"></div>`
+                    ).join('')}
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Vista previa</label>
+                <div class="preview-bar">
+                    <div class="preview-fill" id="previewFill" style="background:${selectedColor}"></div>
+                    <div class="preview-content">
+                        <span class="preview-name" id="previewName">Tarea</span>
+                        <span class="preview-counter">0 / <span id="previewGoal">100</span></span>
+                    </div>
+                </div>
+            </div>
+            <button class="btn-primary" id="btnCreate" style="background:${selectedColor}">
+                Crear Tarea
+            </button>
+        `;
+
+        // Eventos colores
+        body.querySelectorAll('.color-option').forEach(el => {
+            el.addEventListener('click', () => {
+                body.querySelectorAll('.color-option').forEach(e => e.classList.remove('selected'));
+                el.classList.add('selected');
+                selectedColor = el.dataset.hex;
+                document.getElementById('previewFill').style.background = selectedColor;
+                document.getElementById('btnCreate').style.background = selectedColor;
+            });
+        });
+
+        // Eventos inputs
+        const inputName = document.getElementById('inputName');
+        const inputGoal = document.getElementById('inputGoal');
+
+        inputName.addEventListener('input', () => {
+            document.getElementById('previewName').textContent = inputName.value || 'Tarea';
+        });
+        inputGoal.addEventListener('input', () => {
+            document.getElementById('previewGoal').textContent = inputGoal.value || '0';
+        });
+
+        // Botón crear
+        document.getElementById('btnCreate').addEventListener('click', () => {
+            const name = inputName.value.trim();
+            const goal = parseInt(inputGoal.value) || 100;
+            addTask(name, goal, selectedColor);
+            closeModal();
+        });
+
+        overlay.classList.add('active');
+        setTimeout(() => inputName.focus(), 400);
+    }
+
+    // ============================================
+    // MODAL: LISTA EDITAR
+    // ============================================
+    function showEditList() {
+        if (tasks.length === 0) return;
+
+        const overlay = document.getElementById('editListOverlay');
+        const body = document.getElementById('editListBody');
+
+        let html = '<div class="edit-task-list">';
+        tasks.forEach(task => {
+            html += `
+                <div class="edit-task-item" onclick="showEditModal('${task.id}')">
+                    <div class="edit-task-dot" style="background:${task.colorHex}"></div>
+                    <div class="edit-task-info">
+                        <div class="edit-task-name">${escapeHtml(task.name)}</div>
+                        <div class="edit-task-meta">${task.count} / ${task.goal}</div>
+                    </div>
+                    <span class="edit-task-arrow">›</span>
+                </div>
+            `;
+        });
+        html += '</div>';
+        body.innerHTML = html;
+
+        overlay.classList.add('active');
+    }
+
+    // ============================================
+    // MODAL: EDITAR TAREA
+    // ============================================
+    function showEditModal(id) {
+        // Cerrar lista
+        document.getElementById('editListOverlay').classList.remove('active');
+
+        const task = tasks.find(t => t.id === id);
+        if (!task) return;
+
+        const overlay = document.getElementById('modalOverlay');
+        const title = document.getElementById('modalTitle');
+        const body = document.getElementById('modalBody');
+
+        title.textContent = 'Editar Tarea';
+
+        let selectedColor = task.colorHex;
+
+        body.innerHTML = `
+            <div class="stats-row">
+                <div class="stat-box">
+                    <span class="stat-icon">👆</span>
+                    <span class="stat-value">${task.count}</span>
+                    <span class="stat-label">Contador</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-icon">🔥</span>
+                    <span class="stat-value">${task.streakPositive}</span>
+                    <span class="stat-label">Racha+</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-icon">🌙</span>
+                    <span class="stat-value">${task.streakNegative}</span>
+                    <span class="stat-label">Racha-</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Nombre de la tarea</label>
+                <input type="text" class="form-input" id="editName" value="${escapeHtml(task.name)}" maxlength="30">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Objetivo total</label>
+                <input type="number" class="form-input" id="editGoal" value="${task.goal}" min="1" inputmode="numeric">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Color de la barra</label>
+                <div class="color-grid" id="editColorGrid">
+                    ${PRESET_COLORS.map(c =>
+                        `<div class="color-option ${c.hex === task.colorHex ? 'selected' : ''}"
+                              data-hex="${c.hex}"
+                              style="background:${c.hex}"></div>`
+                    ).join('')}
+                </div>
+            </div>
+            <button class="btn-primary" id="btnSave" style="background:${selectedColor}">
+                Guardar Cambios
+            </button>
+            <button class="btn-reset" id="btnReset">
+                ↺ Resetear contador a 0
+            </button>
+            <button class="btn-danger" id="btnDelete">
+                🗑 Eliminar tarea
+            </button>
+        `;
+
+        // Eventos colores
+        body.querySelectorAll('.color-option').forEach(el => {
+            el.addEventListener('click', () => {
+                body.querySelectorAll('.color-option').forEach(e => e.classList.remove('selected'));
+                el.classList.add('selected');
+                selectedColor = el.dataset.hex;
+                document.getElementById('btnSave').style.background = selectedColor;
+            });
+        });
+
+        // Guardar
+        document.getElementById('btnSave').addEventListener('click', () => {
+            const name = document.getElementById('editName').value.trim();
+            const goal = parseInt(document.getElementById('editGoal').value) || task.goal;
+            updateTask(id, name, goal, selectedColor);
+            closeModal();
+        });
+
+        // Resetear
+        document.getElementById('btnReset').addEventListener('click', () => {
+            showConfirm(
+                '¿Resetear contador?',
+                `El contador de "${task.name}" volverá a 0 y se perderán las rachas.`,
+                'Resetear',
+                'btn-confirm-reset',
+                () => {
+                    resetTask(id);
+                    closeModal();
+                }
+            );
+        });
+
+        // Eliminar
+        document.getElementById('btnDelete').addEventListener('click', () => {
+            showConfirm(
+                '¿Eliminar tarea?',
+                `Se perderán todos los datos de "${task.name}". Esta acción no se puede deshacer.`,
+                'Eliminar',
+                'btn-confirm-delete',
+                () => {
+                    deleteTask(id);
+                    closeModal();
+                }
+            );
+        });
+
+        overlay.classList.add('active');
+    }
+
+    // ============================================
+    // CONFIRM DIALOG
+    // ============================================
+    function showConfirm(titleText, msg, actionText, btnClass, onConfirm) {
+        const overlay = document.getElementById('confirmOverlay');
+        document.getElementById('confirmTitle').textContent = titleText;
+        document.getElementById('confirmMsg').textContent = msg;
+
+        const actionBtn = document.getElementById('confirmAction');
+        actionBtn.textContent = actionText;
+        actionBtn.className = btnClass;
+
+        actionBtn.onclick = () => {
+            overlay.classList.remove('active');
+            onConfirm();
+        };
+
+        document.getElementById('confirmCancel').onclick = () => {
+            overlay.classList.remove('active');
+        };
+
+        overlay.classList.add('active');
+    }
+
+    // ============================================
+    // CERRAR MODALES
+    // ============================================
+    function closeModal() {
+        document.getElementById('modalOverlay').classList.remove('active');
+    }
+
+    function closeEditList() {
+        document.getElementById('editListOverlay').classList.remove('active');
+    }
+
+    // Click fuera del modal para cerrar
+    document.getElementById('modalOverlay').addEventListener('click', (e) => {
+        if (e.target.id === 'modalOverlay') closeModal();
+    });
+
+    document.getElementById('editListOverlay').addEventListener('click', (e) => {
+        if (e.target.id === 'editListOverlay') closeEditList();
+    });
+
+    document.getElementById('confirmOverlay').addEventListener('click', (e) => {
+        if (e.target.id === 'confirmOverlay') {
+            document.getElementById('confirmOverlay').classList.remove('active');
+        }
+    });
+
+    // Botones cerrar
+    document.getElementById('modalClose').addEventListener('click', closeModal);
+    document.getElementById('editListClose').addEventListener('click', closeEditList);
+
+    // Botones navbar
+    document.getElementById('btnAdd').addEventListener('click', showAddModal);
+    document.getElementById('btnEdit').addEventListener('click', showEditList);
+
+    // ============================================
+    // INICIALIZACIÓN
+    // ============================================
+    load();
+    updateAllStreaks();
+    render();
+
+    // Actualizar rachas cada vez que la app vuelve al frente
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+            updateAllStreaks();
+            render();
+        }
+    });
+    </script>
+
+</body>
+</html>
