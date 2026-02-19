@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Capitales">
+  <meta name="theme-color" content="#0f1b2d">
+  <title>Capitales de Europa</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    :root {
+      --bg: #0f1b2d;
+      --bg2: #162235;
+      --accent: #4fc3f7;
+      --accent2: #00e5a0;
+      --danger: #ff5370;
+      --gold: #ffd54f;
+      --text: #e8f4fd;
+      --muted: #8ba4c0;
+      --card: rgba(255,255,255,0.05);
+      --border: rgba(79,195,247,0.2);
+      --radius: 18px;
+    }
+
+    html, body {
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .screen {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: max(env(safe-area-inset-top), 20px) 24px max(env(safe-area-inset-bottom), 20px);
+      gap: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s ease;
+      overflow-y: auto;
+    }
+
+    .screen.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    /* ---- PANTALLA INICIO ---- */
+    #screen-inicio .logo {
+      font-size: 64px;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    #screen-inicio h1 {
+      font-size: clamp(26px, 7vw, 36px);
+      font-weight: 800;
+      text-align: center;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.2;
+    }
+
+    #screen-inicio p {
+      color: var(--muted);
+      text-align: center;
+      font-size: 15px;
+      max-width: 280px;
+    }
+
+    /* ---- PANTALLA NOMBRE ---- */
+    #screen-nombre h2 {
+      font-size: 24px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    #screen-nombre p {
+      color: var(--muted);
+      text-align: center;
+      font-size: 15px;
+    }
+
+    /* ---- PANTALLA JUEGO ---- */
+    #screen-juego {
+      justify-content: space-between;
+      padding-top: max(env(safe-area-inset-top), 40px);
+      padding-bottom: max(env(safe-area-inset-bottom), 30px);
+    }
+
+    .hud {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      backdrop-filter: blur(10px);
+    }
+
+    .hud-puntos {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .hud-label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .hud-valor {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--accent2);
+      line-height: 1;
+    }
+
+    .hud-progreso {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+    }
+
+    .pais-card {
+      width: 100%;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 24px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      backdrop-filter: blur(10px);
+    }
+
+    .pais-emoji {
+      font-size: 52px;
+      line-height: 1;
+    }
+
+    .pais-pregunta {
+      font-size: 13px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+    }
+
+    .pais-nombre {
+      font-size: clamp(28px, 8vw, 42px);
+      font-weight: 800;
+      text-align: center;
+      line-height: 1.1;
+      color: var(--text);
+    }
+
+    .respuesta-area {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .feedback {
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: 10px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .feedback.ok {
+      color: var(--accent2);
+      background: rgba(0,229,160,0.1);
+      opacity: 1;
+    }
+
+    .feedback.mal {
+      color: var(--danger);
+      background: rgba(255,83,112,0.1);
+      opacity: 1;
+    }
+
+    /* ---- PANTALLA RESULTADO ---- */
+    #screen-resultado .icono-resultado {
+      font-size: 90px;
+      line-height: 1;
+      animation: bounce 0.6s ease;
+    }
+
+    @keyframes bounce {
+      0% { transform: scale(0); }
+      60% { transform: scale(1.15); }
+      100% { transform: scale(1); }
+    }
+
+    #screen-resultado h2 {
+      font-size: 28px;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    #screen-resultado .puntos-finales {
+      font-size: 18px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    #screen-resultado .puntos-finales span {
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 24px;
+    }
+
+    /* ---- PANTALLA RANKING ---- */
+    #screen-ranking h2 {
+      font-size: 26px;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .ranking-lista {
+      width: 100%;
+      max-width: 380px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 50vh;
+      overflow-y: auto;
+      padding: 4px;
+    }
+
+    .ranking-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      transition: transform 0.15s;
+    }
+
+    .ranking-item:first-child {
+      border-color: var(--gold);
+      background: rgba(255,213,79,0.08);
+    }
+
+    .ranking-pos {
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--muted);
+      width: 28px;
+      text-align: center;
+    }
+
+    .ranking-item:first-child .ranking-pos {
+      color: var(--gold);
+    }
+
+    .ranking-nombre {
+      flex: 1;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .ranking-puntos {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--accent);
+    }
+
+    .ranking-vacio {
+      color: var(--muted);
+      text-align: center;
+      font-size: 16px;
+      padding: 20px;
+    }
+
+    /* ---- COMPONENTES COMUNES ---- */
+    .btn {
+      display: block;
+      width: 100%;
+      max-width: 340px;
+      padding: 16px 24px;
+      border: none;
+      border-radius: 14px;
+      font-size: 17px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.1s, opacity 0.1s;
+      letter-spacing: 0.3px;
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+      opacity: 0.85;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #0288d1);
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(79,195,247,0.3);
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, var(--accent2), #00897b);
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(0,229,160,0.3);
+    }
+
+    .btn-ghost {
+      background: var(--card);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-confirm {
+      background: linear-gradient(135deg, var(--accent2), #00897b);
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(0,229,160,0.25);
+    }
+
+    .input-field {
+      width: 100%;
+      max-width: 340px;
+      padding: 16px 20px;
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      font-size: 18px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s;
+      -webkit-appearance: none;
+      appearance: none;
+      text-align: center;
+    }
+
+    .input-field:focus {
+      border-color: var(--accent);
+      background: rgba(79,195,247,0.05);
+    }
+
+    .input-field::placeholder {
+      color: var(--muted);
+    }
+
+    /* Barra de progreso */
+    .progress-bar-wrap {
+      width: 100%;
+      height: 4px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 2px;
+      transition: width 0.4s ease;
+    }
+
+    /* Confeti mini */
+    .confeti {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    .confeti-piece {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      animation: caer 2.5s ease-in forwards;
+    }
+
+    @keyframes caer {
+      0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+
+    /* Separador */
+    .divider {
+      width: 100%;
+      max-width: 340px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .divider span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- PANTALLA INICIO -->
+  <div id="screen-inicio" class="screen active">
+    <div class="logo">🌍</div>
+    <h1>Capitales de Europa</h1>
+    <p>¿Cuántas capitales conoces? Pon a prueba tu memoria con más de 50 países.</p>
+    <button class="btn btn-primary" onclick="irANombre('nuevo')">Jugar</button>
+    <button class="btn btn-ghost" onclick="mostrarRanking()">🏆 Récords</button>
+  </div>
+
+  <!-- PANTALLA NOMBRE -->
+  <div id="screen-nombre" class="screen">
+    <div style="font-size:48px">👤</div>
+    <h2 id="nombre-titulo">¿Cómo te llamas?</h2>
+    <p id="nombre-subtitulo">Tu nombre aparecerá en el ranking</p>
+    <input
+      id="input-nombre"
+      class="input-field"
+      type="text"
+      placeholder="Tu nombre..."
+      maxlength="20"
+      autocomplete="off"
+      autocorrect="off"
+      spellcheck="false"
+    >
+    <button class="btn btn-success" id="btn-iniciar" onclick="iniciarJuego()">🎮 Iniciar Juego</button>
+    <button class="btn btn-ghost" onclick="irAInicio()">Volver</button>
+  </div>
+
+  <!-- PANTALLA JUEGO -->
+  <div id="screen-juego" class="screen">
+    <div class="hud">
+      <div class="hud-puntos">
+        <span class="hud-label">Puntos</span>
+        <span class="hud-valor" id="hud-puntos">0</span>
+      </div>
+      <div class="hud-progreso">
+        <span class="hud-label" style="text-align:right">Pregunta</span>
+        <span class="hud-valor" id="hud-progreso" style="color: var(--accent);">1/50</span>
+      </div>
+    </div>
+
+    <div class="pais-card">
+      <span class="pais-emoji" id="pais-emoji">🌍</span>
+      <span class="pais-pregunta">¿Cuál es la capital de...?</span>
+      <span class="pais-nombre" id="pais-nombre">España</span>
+      <div class="progress-bar-wrap" style="width:100%; max-width:240px">
+        <div class="progress-bar-fill" id="progress-bar" style="width:0%"></div>
+      </div>
+    </div>
+
+    <div class="respuesta-area">
+      <div class="feedback" id="feedback"></div>
+      <input
+        id="input-respuesta"
+        class="input-field"
+        type="text"
+        placeholder="Escribe la capital..."
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="none"
+        spellcheck="false"
+        onkeydown="teclaPresionada(event)"
+      >
+      <button class="btn btn-confirm" onclick="comprobarRespuesta()">✓ Confirmar</button>
+    </div>
+  </div>
+
+  <!-- PANTALLA RESULTADO -->
+  <div id="screen-resultado" class="screen">
+    <div class="icono-resultado" id="icono-resultado">😵</div>
+    <h2 id="resultado-titulo">¡Vaya!</h2>
+    <p class="puntos-finales" id="resultado-texto">Has conseguido <span id="resultado-puntos">0</span> puntos</p>
+
+    <div id="resultado-respuesta-section" style="width:100%; max-width:340px; background: var(--card); border:1px solid var(--border); border-radius:14px; padding:14px 18px; text-align:center; display:none">
+      <p style="font-size:13px; color:var(--muted); margin-bottom:4px">La capital correcta era:</p>
+      <p style="font-size:20px; font-weight:700; color:var(--accent)" id="resultado-capital-correcta"></p>
+    </div>
+
+    <div class="divider" id="divider-nombre"><span>Guarda tu puntuación</span></div>
+
+    <input
+      id="input-nombre-resultado"
+      class="input-field"
+      type="text"
+      placeholder="Tu nombre..."
+      maxlength="20"
+      autocomplete="off"
+      autocorrect="off"
+      spellcheck="false"
+    >
+    <button class="btn btn-primary" onclick="guardarYRanking()">💾 Guardar y ver récords</button>
+    <button class="btn btn-ghost" onclick="irANombre('nuevo')">🔄 Jugar de nuevo</button>
+  </div>
+
+  <!-- PANTALLA RANKING -->
+  <div id="screen-ranking" class="screen">
+    <div style="font-size:48px">🏆</div>
+    <h2>Récords</h2>
+    <div class="ranking-lista" id="ranking-lista"></div>
+    <button class="btn btn-primary" onclick="irANombre('nuevo')">🎮 Jugar de nuevo</button>
+    <button class="btn btn-ghost" onclick="irAInicio()">Inicio</button>
+  </div>
+
+  <script>
+    // =============================================
+    // DATOS: PAÍSES Y CAPITALES
+    // =============================================
+    const PAISES = [
+      // Europa
+      { pais: "Albania",         capital: "Tirana",         alias: ["tirana"],            emoji: "🇦🇱" },
+      { pais: "Andorra",         capital: "Andorra la Vella",alias: ["andorra"],           emoji: "🇦🇩" },
+      { pais: "Austria",         capital: "Viena",           alias: ["viena","vienna"],    emoji: "🇦🇹" },
+      { pais: "Bélgica",         capital: "Bruselas",        alias: ["bruselas","brussels"],emoji: "🇧🇪" },
+      { pais: "Bielorrusia",     capital: "Minsk",           alias: ["minsk"],             emoji: "🇧🇾" },
+      { pais: "Bosnia-Herzegovina", capital: "Sarajevo",     alias: ["sarajevo"],          emoji: "🇧🇦" },
+      { pais: "Bulgaria",        capital: "Sofía",           alias: ["sofia","sofía"],     emoji: "🇧🇬" },
+      { pais: "Chipre",          capital: "Nicosia",         alias: ["nicosia","lefkosia"],emoji: "🇨🇾" },
+      { pais: "Croacia",         capital: "Zagreb",          alias: ["zagreb"],            emoji: "🇭🇷" },
+      { pais: "Dinamarca",       capital: "Copenhague",      alias: ["copenhague","copenhagen"],emoji: "🇩🇰" },
+      { pais: "Eslovaquia",      capital: "Bratislava",      alias: ["bratislava"],        emoji: "🇸🇰" },
+      { pais: "Eslovenia",       capital: "Liubliana",       alias: ["liubliana","ljubljana"],emoji: "🇸🇮" },
+      { pais: "España",          capital: "Madrid",          alias: ["madrid"],            emoji: "🇪🇸" },
+      { pais: "Estonia",         capital: "Tallin",          alias: ["tallin","tallinn"],  emoji: "🇪🇪" },
+      { pais: "Finlandia",       capital: "Helsinki",        alias: ["helsinki"],          emoji: "🇫🇮" },
+      { pais: "Francia",         capital: "París",           alias: ["paris","parís"],     emoji: "🇫🇷" },
+      { pais: "Grecia",          capital: "Atenas",          alias: ["atenas","athens"],   emoji: "🇬🇷" },
+      { pais: "Hungría",         capital: "Budapest",        alias: ["budapest"],          emoji: "🇭🇺" },
+      { pais: "Irlanda",         capital: "Dublín",          alias: ["dublin","dublín"],   emoji: "🇮🇪" },
+      { pais: "Islandia",        capital: "Reikiavik",       alias: ["reikiavik","reykjavik","reikjavic"],emoji: "🇮🇸" },
+      { pais: "Italia",          capital: "Roma",            alias: ["roma","rome"],       emoji: "🇮🇹" },
+      { pais: "Kosovo",          capital: "Pristina",        alias: ["pristina","priština"],emoji: "🇽🇰" },
+      { pais: "Letonia",         capital: "Riga",            alias: ["riga"],              emoji: "🇱🇻" },
+      { pais: "Liechtenstein",   capital: "Vaduz",           alias: ["vaduz"],             emoji: "🇱🇮" },
+      { pais: "Lituania",        capital: "Vilna",           alias: ["vilna","vilnius"],   emoji: "🇱🇹" },
+      { pais: "Luxemburgo",      capital: "Luxemburgo",      alias: ["luxemburgo","luxembourg"],emoji: "🇱🇺" },
+      { pais: "Malta",           capital: "La Valeta",       alias: ["la valeta","valletta","valeta"],emoji: "🇲🇹" },
+      { pais: "Moldavia",        capital: "Chisináu",        alias: ["chisinau","chisináu","kishinev"],emoji: "🇲🇩" },
+      { pais: "Mónaco",          capital: "Mónaco",          alias: ["monaco","mónaco"],   emoji: "🇲🇨" },
+      { pais: "Montenegro",      capital: "Podgorica",       alias: ["podgorica"],         emoji: "🇲🇪" },
+      { pais: "Macedonia del Norte", capital: "Skopie",      alias: ["skopie","skopje"],   emoji: "🇲🇰" },
+      { pais: "Noruega",         capital: "Oslo",            alias: ["oslo"],              emoji: "🇳🇴" },
+      { pais: "Países Bajos",    capital: "Ámsterdam",       alias: ["amsterdam","ámsterdam"],emoji: "🇳🇱" },
+      { pais: "Polonia",         capital: "Varsovia",        alias: ["varsovia","warsaw"],  emoji: "🇵🇱" },
+      { pais: "Portugal",        capital: "Lisboa",          alias: ["lisboa","lisbon"],   emoji: "🇵🇹" },
+      { pais: "Reino Unido",     capital: "Londres",         alias: ["londres","london"],  emoji: "🇬🇧" },
+      { pais: "República Checa", capital: "Praga",           alias: ["praga","prague"],    emoji: "🇨🇿" },
+      { pais: "Rumanía",         capital: "Bucarest",        alias: ["bucarest","bucharest"],emoji: "🇷🇴" },
+      { pais: "San Marino",      capital: "San Marino",      alias: ["san marino"],        emoji: "🇸🇲" },
+      { pais: "Serbia",          capital: "Belgrado",        alias: ["belgrado","belgrade"],emoji: "🇷🇸" },
+      { pais: "Suecia",          capital: "Estocolmo",       alias: ["estocolmo","stockholm"],emoji: "🇸🇪" },
+      { pais: "Suiza",           capital: "Berna",           alias: ["berna","berne"],     emoji: "🇨🇭" },
+      { pais: "Ucrania",         capital: "Kiev",            alias: ["kiev","kyiv"],       emoji: "🇺🇦" },
+      { pais: "Ciudad del Vaticano", capital: "Ciudad del Vaticano", alias: ["vaticano","vatican"],emoji: "🇻🇦" },
+      // Asia con parte en Europa
+      { pais: "Rusia",           capital: "Moscú",           alias: ["moscu","moscú","moscow"],emoji: "🇷🇺" },
+      { pais: "Turquía",         capital: "Ankara",          alias: ["ankara"],            emoji: "🇹🇷" },
+      { pais: "Kazajistán",      capital: "Astana",          alias: ["astana","nur-sultan","nursultan"],emoji: "🇰🇿" },
+      { pais: "Azerbaiyán",      capital: "Bakú",            alias: ["baku","bakú"],       emoji: "🇦🇿" },
+      { pais: "Georgia",         capital: "Tiflis",          alias: ["tiflis","tbilisi"],  emoji: "🇬🇪" },
+      { pais: "Armenia",         capital: "Ereván",          alias: ["erevan","yerevan","ereván"],emoji: "🇦🇲" },
+    ];
+
+    // =============================================
+    // ESTADO DEL JUEGO
+    // =============================================
+    let estado = {
+      cola: [],
+      indice: 0,
+      puntos: 0,
+      nombreJugador: "",
+      ultimaCapitalCorrecta: "",
+      paisActual: null,
+    };
+
+    // =============================================
+    // UTILIDADES
+    // =============================================
+    function normalizar(str) {
+      return str
+        .toLowerCase()
+        .trim()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, " ");
+    }
+
+    function mezclar(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function mostrarPantalla(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    // =============================================
+    // RECORDS (localStorage)
+    // =============================================
+    const RECORDS_KEY = 'capitales_records_v2';
+
+    function getRecords() {
+      try {
+        return JSON.parse(localStorage.getItem(RECORDS_KEY)) || [];
+      } catch { return []; }
+    }
+
+    function guardarRecord(nombre, puntos) {
+      const records = getRecords();
+      records.push({ nombre: nombre.trim() || "Anónimo", puntos });
+      records.sort((a, b) => b.puntos - a.puntos);
+      // Limitar a 50 records
+      localStorage.setItem(RECORDS_KEY, JSON.stringify(records.slice(0, 50)));
+    }
+
+    // =============================================
+    // NAVEGACIÓN
+    // =============================================
+    function irAInicio() {
+      mostrarPantalla('screen-inicio');
+    }
+
+    function irANombre(motivo) {
+      const titulo = document.getElementById('nombre-titulo');
+      const subtitulo = document.getElementById('nombre-subtitulo');
+      titulo.textContent = motivo === 'nuevo' ? '¿Cómo te llamas?' : '¡Buen intento!';
+      subtitulo.textContent = 'Tu nombre aparecerá en el ranking';
+      document.getElementById('input-nombre').value = estado.nombreJugador || '';
+      mostrarPantalla('screen-nombre');
+      setTimeout(() => document.getElementById('input-nombre').focus(), 400);
+    }
+
+    function mostrarRanking() {
+      renderizarRanking();
+      mostrarPantalla('screen-ranking');
+    }
+
+    // =============================================
+    // INICIAR JUEGO
+    // =============================================
+    function iniciarJuego() {
+      const nombre = document.getElementById('input-nombre').value.trim();
+      estado.nombreJugador = nombre || "Anónimo";
+      estado.puntos = 0;
+      estado.indice = 0;
+      estado.cola = mezclar(PAISES);
+
+      mostrarPantalla('screen-juego');
+      actualizarHUD();
+      mostrarPaisActual();
+
+      // Focus en input con pequeño delay (iOS)
+      setTimeout(() => document.getElementById('input-respuesta').focus(), 500);
+    }
+
+    // =============================================
+    // LÓGICA DE JUEGO
+    // =============================================
+    function mostrarPaisActual() {
+      const item = estado.cola[estado.indice];
+      estado.paisActual = item;
+      document.getElementById('pais-nombre').textContent = item.pais;
+      document.getElementById('pais-emoji').textContent = item.emoji;
+      document.getElementById('input-respuesta').value = '';
+      document.getElementById('feedback').textContent = '';
+      document.getElementById('feedback').className = 'feedback';
+      actualizarProgreso();
+    }
+
+    function actualizarHUD() {
+      document.getElementById('hud-puntos').textContent = estado.puntos;
+    }
+
+    function actualizarProgreso() {
+      const total = estado.cola.length;
+      const actual = estado.indice + 1;
+      document.getElementById('hud-progreso').textContent = `${actual}/${total}`;
+      const pct = (estado.indice / total) * 100;
+      document.getElementById('progress-bar').style.width = pct + '%';
+    }
+
+    function teclaPresionada(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        comprobarRespuesta();
+      }
+    }
+
+    function comprobarRespuesta() {
+      const respuesta = document.getElementById('input-respuesta').value;
+      const item = estado.paisActual;
+
+      const rNorm = normalizar(respuesta);
+      const capitalNorm = normalizar(item.capital);
+      const aliasNorm = (item.alias || []).map(normalizar);
+
+      const esCorrecta = rNorm === capitalNorm || aliasNorm.includes(rNorm);
+
+      if (!respuesta.trim()) return; // no hacer nada si está vacío
+
+      if (esCorrecta) {
+        estado.puntos++;
+        actualizarHUD();
+        mostrarFeedback(true);
+
+        estado.indice++;
+        if (estado.indice >= estado.cola.length) {
+          // ¡Victoria completa!
+          setTimeout(() => mostrarVictoria(), 600);
+        } else {
+          setTimeout(() => {
+            mostrarPaisActual();
+            document.getElementById('input-respuesta').focus();
+          }, 700);
+        }
+      } else {
+        estado.ultimaCapitalCorrecta = item.capital;
+        mostrarFeedback(false);
+        setTimeout(() => mostrarDerrota(item.capital), 900);
+      }
+    }
+
+    function mostrarFeedback(correcto) {
+      const fb = document.getElementById('feedback');
+      if (correcto) {
+        fb.textContent = '✓ ¡Correcto!';
+        fb.className = 'feedback ok';
+      } else {
+        fb.textContent = '✗ Incorrecto';
+        fb.className = 'feedback mal';
+      }
+    }
+
+    // =============================================
+    // VICTORIA
+    // =============================================
+    function mostrarVictoria() {
+      document.getElementById('icono-resultado').textContent = '🏆';
+      document.getElementById('resultado-titulo').textContent = '¡Enhorabuena!';
+      document.getElementById('resultado-texto').innerHTML =
+        `¡Has completado todos los países! Puntuación: <span id="resultado-puntos">${estado.puntos}</span> puntos`;
+      document.getElementById('resultado-respuesta-section').style.display = 'none';
+      document.getElementById('input-nombre-resultado').value = estado.nombreJugador;
+      mostrarPantalla('screen-resultado');
+      lanzarConfeti();
+    }
+
+    // =============================================
+    // DERROTA
+    // =============================================
+    function mostrarDerrota(capitalCorrecta) {
+      const iconos = ['😵', '🤦', '😅', '🙈', '💀', '😭', '🫠'];
+      const icono = iconos[Math.floor(Math.random() * iconos.length)];
+
+      document.getElementById('icono-resultado').textContent = icono;
+      document.getElementById('resultado-titulo').textContent = '¡Has fallado!';
+      document.getElementById('resultado-texto').innerHTML =
+        `Has conseguido <span id="resultado-puntos">${estado.puntos}</span> puntos`;
+      document.getElementById('resultado-capital-correcta').textContent = capitalCorrecta;
+      document.getElementById('resultado-respuesta-section').style.display = 'block';
+      document.getElementById('input-nombre-resultado').value = estado.nombreJugador;
+      mostrarPantalla('screen-resultado');
+    }
+
+    // =============================================
+    // GUARDAR Y VER RANKING
+    // =============================================
+    function guardarYRanking() {
+      const nombre = document.getElementById('input-nombre-resultado').value.trim() || estado.nombreJugador || 'Anónimo';
+      guardarRecord(nombre, estado.puntos);
+      renderizarRanking();
+      mostrarPantalla('screen-ranking');
+    }
+
+    function renderizarRanking() {
+      const records = getRecords();
+      const lista = document.getElementById('ranking-lista');
+
+      if (records.length === 0) {
+        lista.innerHTML = '<p class="ranking-vacio">Aún no hay récords. ¡Sé el primero!</p>';
+        return;
+      }
+
+      const medallas = ['🥇', '🥈', '🥉'];
+      lista.innerHTML = records.map((r, i) => `
+        <div class="ranking-item">
+          <span class="ranking-pos">${medallas[i] || (i + 1)}</span>
+          <span class="ranking-nombre">${escapeHtml(r.nombre)}</span>
+          <span class="ranking-puntos">${r.puntos}</span>
+        </div>
+      `).join('');
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    // =============================================
+    // CONFETI
+    // =============================================
+    function lanzarConfeti() {
+      const colores = ['#4fc3f7', '#00e5a0', '#ffd54f', '#ff5370', '#ce93d8', '#80cbc4'];
+      const container = document.createElement('div');
+      container.className = 'confeti';
+      document.body.appendChild(container);
+
+      for (let i = 0; i < 60; i++) {
+        const piece = document.createElement('div');
+        piece.className = 'confeti-piece';
+        piece.style.left = Math.random() * 100 + 'vw';
+        piece.style.top = '-20px';
+        piece.style.background = colores[Math.floor(Math.random() * colores.length)];
+        piece.style.animationDelay = (Math.random() * 1.5) + 's';
+        piece.style.animationDuration = (1.5 + Math.random() * 1.5) + 's';
+        piece.style.width = (6 + Math.random() * 8) + 'px';
+        piece.style.height = (6 + Math.random() * 8) + 'px';
+        piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+        container.appendChild(piece);
+      }
+
+      setTimeout(() => container.remove(), 4000);
+    }
+
+    // =============================================
+    // INIT: Enter en campo nombre
+    // =============================================
+    document.getElementById('input-nombre').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        iniciarJuego();
+      }
+    });
+
+    document.getElementById('input-nombre-resultado').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        guardarYRanking();
+      }
+    });
+  </script>
+</body>
+</html>
