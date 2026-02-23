@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Capitales">
+  <meta name="theme-color" content="#0f1b2d">
+  <title>Capitales de Europa</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    :root {
+      --bg: #0f1b2d;
+      --accent: #4fc3f7;
+      --accent2: #00e5a0;
+      --danger: #ff5370;
+      --warn: #ffb74d;
+      --gold: #ffd54f;
+      --text: #e8f4fd;
+      --muted: #8ba4c0;
+      --card: rgba(255,255,255,0.05);
+      --border: rgba(79,195,247,0.2);
+      --radius: 18px;
+    }
+
+    html, body {
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .screen {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: max(env(safe-area-inset-top), 20px) 20px max(env(safe-area-inset-bottom), 20px);
+      gap: 16px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      overflow-y: auto;
+    }
+
+    .screen.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    /* -------- INICIO -------- */
+    .logo { font-size: 60px; line-height: 1; }
+
+    #screen-inicio h1 {
+      font-size: clamp(24px, 6vw, 34px);
+      font-weight: 800;
+      text-align: center;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.2;
+    }
+
+    #screen-inicio p {
+      color: var(--muted);
+      text-align: center;
+      font-size: 14px;
+      max-width: 280px;
+    }
+
+    /* -------- NOMBRE -------- */
+    #screen-nombre h2 {
+      font-size: 22px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    #screen-nombre p {
+      color: var(--muted);
+      text-align: center;
+      font-size: 14px;
+    }
+
+    /* -------- JUEGO -------- */
+    #screen-juego {
+      justify-content: flex-start;
+      padding-top: max(env(safe-area-inset-top), 16px);
+      padding-bottom: max(env(safe-area-inset-bottom), 16px);
+      gap: 12px;
+    }
+
+    /* HUD */
+    .hud {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+    }
+
+    .hud-bloque {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .hud-bloque:last-child { align-items: flex-end; }
+
+    .hud-label {
+      font-size: 10px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .hud-valor {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--accent2);
+      line-height: 1;
+    }
+
+    /* Intentos (corazones) */
+    .intentos-wrap {
+      display: flex;
+      gap: 4px;
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .intento-icono {
+      transition: transform 0.2s, filter 0.2s;
+    }
+
+    .intento-icono.usado {
+      filter: grayscale(1) opacity(0.35);
+      transform: scale(0.85);
+    }
+
+    /* Tarjeta país */
+    .pais-card {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 16px 20px 14px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      flex-shrink: 0;
+    }
+
+    .pais-emoji { font-size: 44px; line-height: 1; }
+
+    .pais-pregunta {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+    }
+
+    .pais-nombre {
+      font-size: clamp(24px, 7vw, 38px);
+      font-weight: 800;
+      text-align: center;
+      line-height: 1.1;
+    }
+
+    /* Barra progreso */
+    .progress-bar-wrap {
+      width: 100%;
+      height: 3px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 2px;
+      transition: width 0.5s ease;
+    }
+
+    /* Feedback inline */
+    .feedback-inline {
+      width: 100%;
+      min-height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      border-radius: 10px;
+      opacity: 0;
+      transition: opacity 0.2s;
+      text-align: center;
+      padding: 6px 10px;
+      flex-shrink: 0;
+    }
+
+    .feedback-inline.ok {
+      opacity: 1;
+      color: var(--accent2);
+      background: rgba(0,229,160,0.1);
+    }
+
+    .feedback-inline.mal {
+      opacity: 1;
+      color: var(--danger);
+      background: rgba(255,83,112,0.1);
+    }
+
+    .feedback-inline.info {
+      opacity: 1;
+      color: var(--warn);
+      background: rgba(255,183,77,0.1);
+    }
+
+    /* Grid 6 opciones */
+    .opciones-grid {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px;
+      flex-shrink: 0;
+    }
+
+    .opcion-btn {
+      padding: 13px 8px;
+      background: rgba(255,255,255,0.06);
+      border: 2px solid var(--border);
+      border-radius: 13px;
+      font-size: clamp(12px, 3.5vw, 15px);
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, transform 0.1s;
+      text-align: center;
+      line-height: 1.25;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .opcion-btn:active:not(:disabled) {
+      transform: scale(0.96);
+    }
+
+    .opcion-btn.correcta {
+      background: rgba(0,229,160,0.15);
+      border-color: var(--accent2);
+      color: var(--accent2);
+    }
+
+    .opcion-btn.incorrecta {
+      background: rgba(255,83,112,0.12);
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+
+    .opcion-btn.revelada {
+      background: rgba(0,229,160,0.08);
+      border-color: rgba(0,229,160,0.4);
+      color: var(--accent2);
+    }
+
+    .opcion-btn:disabled {
+      cursor: default;
+    }
+
+    /* -------- RESULTADO FINAL -------- */
+    #screen-resultado .icono-resultado {
+      font-size: 86px;
+      line-height: 1;
+      animation: bounce 0.6s ease;
+    }
+
+    @keyframes bounce {
+      0%   { transform: scale(0); }
+      60%  { transform: scale(1.15); }
+      100% { transform: scale(1); }
+    }
+
+    #screen-resultado h2 {
+      font-size: 26px;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .puntos-finales {
+      font-size: 17px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .puntos-finales strong {
+      color: var(--accent);
+      font-size: 22px;
+    }
+
+    .max-posible {
+      font-size: 13px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    /* -------- RANKING -------- */
+    #screen-ranking h2 {
+      font-size: 24px;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .ranking-lista {
+      width: 100%;
+      max-width: 380px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      max-height: 52vh;
+      overflow-y: auto;
+      padding: 2px;
+    }
+
+    .ranking-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 14px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    .ranking-item:first-child {
+      border-color: var(--gold);
+      background: rgba(255,213,79,0.08);
+    }
+
+    .ranking-pos {
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--muted);
+      width: 26px;
+      text-align: center;
+    }
+
+    .ranking-item:first-child .ranking-pos { color: var(--gold); }
+
+    .ranking-nombre { flex: 1; font-size: 15px; font-weight: 600; }
+
+    .ranking-puntos {
+      font-size: 19px;
+      font-weight: 800;
+      color: var(--accent);
+    }
+
+    .ranking-vacio {
+      color: var(--muted);
+      text-align: center;
+      font-size: 15px;
+      padding: 20px;
+    }
+
+    /* -------- COMPONENTES COMUNES -------- */
+    .btn {
+      display: block;
+      width: 100%;
+      max-width: 340px;
+      padding: 15px 20px;
+      border: none;
+      border-radius: 14px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.1s, opacity 0.1s;
+      flex-shrink: 0;
+    }
+
+    .btn:active { transform: scale(0.97); opacity: 0.85; }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #0288d1);
+      color: #fff;
+      box-shadow: 0 4px 18px rgba(79,195,247,0.28);
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, var(--accent2), #00897b);
+      color: #fff;
+      box-shadow: 0 4px 18px rgba(0,229,160,0.28);
+    }
+
+    .btn-ghost {
+      background: var(--card);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .input-field {
+      width: 100%;
+      max-width: 340px;
+      padding: 14px 18px;
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 13px;
+      font-size: 17px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s;
+      -webkit-appearance: none;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .input-field:focus { border-color: var(--accent); }
+    .input-field::placeholder { color: var(--muted); }
+
+    /* Confeti */
+    .confeti { position: fixed; inset: 0; pointer-events: none; z-index: 100; }
+
+    .confeti-piece {
+      position: absolute;
+      border-radius: 2px;
+      animation: caer 2.8s ease-in forwards;
+    }
+
+    @keyframes caer {
+      0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+
+    /* Puntuación máxima posible */
+    .pts-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      background: rgba(79,195,247,0.12);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 12px;
+      color: var(--accent);
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- PANTALLA INICIO -->
+  <div id="screen-inicio" class="screen active">
+    <div class="logo">🌍</div>
+    <h1>Capitales de Europa</h1>
+    <p>¿Cuántas capitales conoces? 50 países, 6 opciones, hasta 3 intentos por pregunta.</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;max-width:300px">
+      <span class="pts-badge">1er intento → 3 pts</span>
+      <span class="pts-badge">2º intento → 2 pts</span>
+      <span class="pts-badge">3er intento → 1 pt</span>
+    </div>
+    <button class="btn btn-primary" onclick="irANombre()">🎮 Jugar</button>
+    <button class="btn btn-ghost" onclick="mostrarRanking()">🏆 Récords</button>
+  </div>
+
+  <!-- PANTALLA NOMBRE -->
+  <div id="screen-nombre" class="screen">
+    <div style="font-size:44px">👤</div>
+    <h2>¿Cómo te llamas?</h2>
+    <p>Tu nombre aparecerá en el ranking</p>
+    <input
+      id="input-nombre"
+      class="input-field"
+      type="text"
+      placeholder="Tu nombre..."
+      maxlength="20"
+      autocomplete="off"
+      autocorrect="off"
+      spellcheck="false"
+    >
+    <button class="btn btn-success" onclick="iniciarJuego()">🎮 Iniciar Juego</button>
+    <button class="btn btn-ghost" onclick="irAInicio()">Volver</button>
+  </div>
+
+  <!-- PANTALLA JUEGO -->
+  <div id="screen-juego" class="screen">
+
+    <div class="hud">
+      <div class="hud-bloque">
+        <span class="hud-label">Puntos</span>
+        <span class="hud-valor" id="hud-puntos">0</span>
+      </div>
+      <div class="hud-bloque" style="align-items:center">
+        <span class="hud-label">Intentos</span>
+        <div class="intentos-wrap" id="intentos-wrap">
+          <span class="intento-icono" id="intento-1">⭐</span>
+          <span class="intento-icono" id="intento-2">⭐</span>
+          <span class="intento-icono" id="intento-3">⭐</span>
+        </div>
+      </div>
+      <div class="hud-bloque">
+        <span class="hud-label" style="text-align:right">Pregunta</span>
+        <span class="hud-valor" id="hud-progreso" style="color:var(--accent)">1/50</span>
+      </div>
+    </div>
+
+    <div class="pais-card">
+      <span class="pais-emoji" id="pais-emoji">🌍</span>
+      <span class="pais-pregunta">¿Cuál es la capital de...?</span>
+      <span class="pais-nombre" id="pais-nombre">España</span>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="progress-bar" style="width:0%"></div>
+      </div>
+    </div>
+
+    <div class="feedback-inline" id="feedback"></div>
+
+    <div class="opciones-grid" id="opciones-grid">
+      <!-- generado por JS -->
+    </div>
+
+  </div>
+
+  <!-- PANTALLA RESULTADO FINAL -->
+  <div id="screen-resultado" class="screen">
+    <div class="icono-resultado" id="icono-resultado">🏆</div>
+    <h2 id="resultado-titulo">¡Enhorabuena!</h2>
+    <p class="puntos-finales">Has conseguido <strong id="resultado-puntos">0</strong> puntos</p>
+    <p class="max-posible" id="resultado-max"></p>
+
+    <div style="width:100%;max-width:340px;height:1px;background:var(--border)"></div>
+    <p style="color:var(--muted);font-size:14px;text-align:center">Guarda tu puntuación</p>
+
+    <input
+      id="input-nombre-resultado"
+      class="input-field"
+      type="text"
+      placeholder="Tu nombre..."
+      maxlength="20"
+      autocomplete="off"
+      autocorrect="off"
+      spellcheck="false"
+    >
+    <button class="btn btn-primary" onclick="guardarYRanking()">💾 Guardar y ver récords</button>
+    <button class="btn btn-ghost" onclick="irANombre()">🔄 Jugar de nuevo</button>
+  </div>
+
+  <!-- PANTALLA RANKING -->
+  <div id="screen-ranking" class="screen">
+    <div style="font-size:44px">🏆</div>
+    <h2>Récords</h2>
+    <div class="ranking-lista" id="ranking-lista"></div>
+    <button class="btn btn-primary" onclick="irANombre()">🎮 Jugar de nuevo</button>
+    <button class="btn btn-ghost" onclick="irAInicio()">Inicio</button>
+  </div>
+
+  <script>
+    // ====================================================
+    // DATOS
+    // ====================================================
+    const PAISES = [
+      { pais: "Albania",            capital: "Tirana",              emoji: "🇦🇱" },
+      { pais: "Andorra",            capital: "Andorra la Vella",    emoji: "🇦🇩" },
+      { pais: "Austria",            capital: "Viena",               emoji: "🇦🇹" },
+      { pais: "Bélgica",            capital: "Bruselas",            emoji: "🇧🇪" },
+      { pais: "Bielorrusia",        capital: "Minsk",               emoji: "🇧🇾" },
+      { pais: "Bosnia-Herzegovina", capital: "Sarajevo",            emoji: "🇧🇦" },
+      { pais: "Bulgaria",           capital: "Sofía",               emoji: "🇧🇬" },
+      { pais: "Chipre",             capital: "Nicosia",             emoji: "🇨🇾" },
+      { pais: "Croacia",            capital: "Zagreb",              emoji: "🇭🇷" },
+      { pais: "Dinamarca",          capital: "Copenhague",          emoji: "🇩🇰" },
+      { pais: "Eslovaquia",         capital: "Bratislava",          emoji: "🇸🇰" },
+      { pais: "Eslovenia",          capital: "Liubliana",           emoji: "🇸🇮" },
+      { pais: "España",             capital: "Madrid",              emoji: "🇪🇸" },
+      { pais: "Estonia",            capital: "Tallin",              emoji: "🇪🇪" },
+      { pais: "Finlandia",          capital: "Helsinki",            emoji: "🇫🇮" },
+      { pais: "Francia",            capital: "París",               emoji: "🇫🇷" },
+      { pais: "Grecia",             capital: "Atenas",              emoji: "🇬🇷" },
+      { pais: "Hungría",            capital: "Budapest",            emoji: "🇭🇺" },
+      { pais: "Irlanda",            capital: "Dublín",              emoji: "🇮🇪" },
+      { pais: "Islandia",           capital: "Reikiavik",           emoji: "🇮🇸" },
+      { pais: "Italia",             capital: "Roma",                emoji: "🇮🇹" },
+      { pais: "Kosovo",             capital: "Pristina",            emoji: "🇽🇰" },
+      { pais: "Letonia",            capital: "Riga",                emoji: "🇱🇻" },
+      { pais: "Liechtenstein",      capital: "Vaduz",               emoji: "🇱🇮" },
+      { pais: "Lituania",           capital: "Vilna",               emoji: "🇱🇹" },
+      { pais: "Luxemburgo",         capital: "Luxemburgo",          emoji: "🇱🇺" },
+      { pais: "Malta",              capital: "La Valeta",           emoji: "🇲🇹" },
+      { pais: "Moldavia",           capital: "Chisináu",            emoji: "🇲🇩" },
+      { pais: "Mónaco",             capital: "Mónaco",              emoji: "🇲🇨" },
+      { pais: "Montenegro",         capital: "Podgorica",           emoji: "🇲🇪" },
+      { pais: "Macedonia del Norte",capital: "Skopie",              emoji: "🇲🇰" },
+      { pais: "Noruega",            capital: "Oslo",                emoji: "🇳🇴" },
+      { pais: "Países Bajos",       capital: "Ámsterdam",           emoji: "🇳🇱" },
+      { pais: "Polonia",            capital: "Varsovia",            emoji: "🇵🇱" },
+      { pais: "Portugal",           capital: "Lisboa",              emoji: "🇵🇹" },
+      { pais: "Reino Unido",        capital: "Londres",             emoji: "🇬🇧" },
+      { pais: "República Checa",    capital: "Praga",               emoji: "🇨🇿" },
+      { pais: "Rumanía",            capital: "Bucarest",            emoji: "🇷🇴" },
+      { pais: "San Marino",         capital: "San Marino",          emoji: "🇸🇲" },
+      { pais: "Serbia",             capital: "Belgrado",            emoji: "🇷🇸" },
+      { pais: "Suecia",             capital: "Estocolmo",           emoji: "🇸🇪" },
+      { pais: "Suiza",              capital: "Berna",               emoji: "🇨🇭" },
+      { pais: "Ucrania",            capital: "Kiev",                emoji: "🇺🇦" },
+      { pais: "Ciudad del Vaticano",capital: "Ciudad del Vaticano", emoji: "🇻🇦" },
+      // Asia con parte en Europa
+      { pais: "Rusia",              capital: "Moscú",               emoji: "🇷🇺" },
+      { pais: "Turquía",            capital: "Ankara",              emoji: "🇹🇷" },
+      { pais: "Kazajistán",         capital: "Astana",              emoji: "🇰🇿" },
+      { pais: "Azerbaiyán",         capital: "Bakú",                emoji: "🇦🇿" },
+      { pais: "Georgia",            capital: "Tiflis",              emoji: "🇬🇪" },
+      { pais: "Armenia",            capital: "Ereván",              emoji: "🇦🇲" },
+    ];
+
+    const MAX_PUNTOS = PAISES.length * 3; // 150 puntos máximo
+
+    // ====================================================
+    // ESTADO
+    // ====================================================
+    let G = {
+      cola: [],
+      indice: 0,
+      puntos: 0,
+      intentosRestantes: 3,
+      bloqueado: false,
+      nombreJugador: "",
+    };
+
+    // ====================================================
+    // UTILIDADES
+    // ====================================================
+    function mezclar(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function mostrarPantalla(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    // ====================================================
+    // RECORDS
+    // ====================================================
+    const REC_KEY = 'capitales_rec_v3';
+
+    function getRecords() {
+      try { return JSON.parse(localStorage.getItem(REC_KEY)) || []; }
+      catch { return []; }
+    }
+
+    function guardarRecord(nombre, puntos) {
+      const recs = getRecords();
+      recs.push({ nombre: nombre.trim() || "Anónimo", puntos });
+      recs.sort((a, b) => b.puntos - a.puntos);
+      localStorage.setItem(REC_KEY, JSON.stringify(recs.slice(0, 50)));
+    }
+
+    // ====================================================
+    // NAVEGACIÓN
+    // ====================================================
+    function irAInicio() { mostrarPantalla('screen-inicio'); }
+
+    function irANombre() {
+      document.getElementById('input-nombre').value = G.nombreJugador || '';
+      mostrarPantalla('screen-nombre');
+      setTimeout(() => document.getElementById('input-nombre').focus(), 350);
+    }
+
+    function mostrarRanking() {
+      renderRanking();
+      mostrarPantalla('screen-ranking');
+    }
+
+    // ====================================================
+    // INICIAR
+    // ====================================================
+    function iniciarJuego() {
+      const nombre = document.getElementById('input-nombre').value.trim();
+      G.nombreJugador = nombre || "Anónimo";
+      G.cola = mezclar(PAISES);
+      G.indice = 0;
+      G.puntos = 0;
+      mostrarPantalla('screen-juego');
+      cargarPregunta();
+    }
+
+    // ====================================================
+    // LÓGICA PRINCIPAL
+    // ====================================================
+    function cargarPregunta() {
+      G.intentosRestantes = 3;
+      G.bloqueado = false;
+
+      const item = G.cola[G.indice];
+
+      // HUD
+      document.getElementById('hud-puntos').textContent = G.puntos;
+      document.getElementById('hud-progreso').textContent =
+        `${G.indice + 1}/${G.cola.length}`;
+      const pct = (G.indice / G.cola.length) * 100;
+      document.getElementById('progress-bar').style.width = pct + '%';
+
+      // País
+      document.getElementById('pais-emoji').textContent = item.emoji;
+      document.getElementById('pais-nombre').textContent = item.pais;
+
+      // Intentos
+      actualizarEstrellas();
+
+      // Feedback vacío
+      setFeedback('', '');
+
+      // Generar opciones
+      generarOpciones(item);
+    }
+
+    function actualizarEstrellas() {
+      for (let i = 1; i <= 3; i++) {
+        const el = document.getElementById('intento-' + i);
+        if (i <= G.intentosRestantes) {
+          el.classList.remove('usado');
+        } else {
+          el.classList.add('usado');
+        }
+      }
+    }
+
+    function generarOpciones(item) {
+      // Tomar 5 capitales falsas aleatorias distintas a la correcta
+      const pool = PAISES.filter(p => p.capital !== item.capital);
+      const falsas = mezclar(pool).slice(0, 5).map(p => p.capital);
+      const opciones = mezclar([item.capital, ...falsas]);
+
+      const grid = document.getElementById('opciones-grid');
+      grid.innerHTML = '';
+
+      opciones.forEach(capital => {
+        const btn = document.createElement('button');
+        btn.className = 'opcion-btn';
+        btn.textContent = capital;
+        btn.dataset.capital = capital;
+        btn.addEventListener('click', () => seleccionarOpcion(btn, item.capital));
+        grid.appendChild(btn);
+      });
+    }
+
+    function seleccionarOpcion(btn, capitalCorrecta) {
+      if (G.bloqueado) return;
+
+      const elegida = btn.dataset.capital;
+      const correcta = elegida === capitalCorrecta;
+
+      if (correcta) {
+        // Marcar correcta
+        btn.classList.add('correcta');
+        const pts = G.intentosRestantes; // 3, 2 o 1
+        G.puntos += pts;
+
+        const msgs = ['', '✓ ¡Correcto! +1 punto', '✓ ¡Correcto! +2 puntos', '✓ ¡Correcto! +3 puntos'];
+        setFeedback(msgs[pts], 'ok');
+
+        bloquearOpciones();
+        setTimeout(() => siguientePregunta(), 1100);
+
+      } else {
+        // Marcar incorrecta
+        btn.classList.add('incorrecta');
+        btn.disabled = true;
+        G.intentosRestantes--;
+        actualizarEstrellas();
+
+        if (G.intentosRestantes === 0) {
+          // Sin más intentos → revelar correcta, 0 pts, siguiente
+          revelarCorrecta(capitalCorrecta);
+          setFeedback('✗ Sin más intentos. La respuesta era: ' + capitalCorrecta, 'mal');
+          bloquearOpciones();
+          setTimeout(() => siguientePregunta(), 1800);
+        } else {
+          const quedan = G.intentosRestantes === 1 ? 'Último intento' : `${G.intentosRestantes} intentos restantes`;
+          setFeedback(`✗ Incorrecto — ${quedan}`, 'info');
+        }
+      }
+    }
+
+    function revelarCorrecta(capitalCorrecta) {
+      document.querySelectorAll('.opcion-btn').forEach(btn => {
+        if (btn.dataset.capital === capitalCorrecta) {
+          btn.classList.add('revelada');
+        }
+      });
+    }
+
+    function bloquearOpciones() {
+      G.bloqueado = true;
+      document.querySelectorAll('.opcion-btn').forEach(btn => {
+        btn.disabled = true;
+      });
+    }
+
+    function setFeedback(texto, tipo) {
+      const fb = document.getElementById('feedback');
+      fb.textContent = texto;
+      fb.className = 'feedback-inline' + (tipo ? ' ' + tipo : '');
+    }
+
+    function siguientePregunta() {
+      G.indice++;
+      if (G.indice >= G.cola.length) {
+        mostrarResultadoFinal();
+      } else {
+        cargarPregunta();
+      }
+    }
+
+    // ====================================================
+    // RESULTADO FINAL
+    // ====================================================
+    function mostrarResultadoFinal() {
+      const puntosMax = G.cola.length * 3;
+      const porcentaje = Math.round((G.puntos / puntosMax) * 100);
+
+      let icono, titulo;
+      if (porcentaje === 100) {
+        icono = '🏆'; titulo = '¡Perfecto! ¡Eres un crack!';
+      } else if (porcentaje >= 80) {
+        icono = '🥇'; titulo = '¡Excelente resultado!';
+      } else if (porcentaje >= 60) {
+        icono = '🥈'; titulo = '¡Muy bien!';
+      } else if (porcentaje >= 40) {
+        icono = '🥉'; titulo = '¡Puedes mejorar!';
+      } else {
+        icono = '😅'; titulo = '¡Sigue practicando!';
+      }
+
+      document.getElementById('icono-resultado').textContent = icono;
+      document.getElementById('resultado-titulo').textContent = titulo;
+      document.getElementById('resultado-puntos').textContent = G.puntos;
+      document.getElementById('resultado-max').textContent =
+        `${G.puntos} de ${puntosMax} puntos posibles (${porcentaje}%)`;
+      document.getElementById('input-nombre-resultado').value = G.nombreJugador;
+
+      mostrarPantalla('screen-resultado');
+
+      if (porcentaje === 100) lanzarConfeti();
+    }
+
+    // ====================================================
+    // GUARDAR Y RANKING
+    // ====================================================
+    function guardarYRanking() {
+      const nombre = document.getElementById('input-nombre-resultado').value.trim()
+                     || G.nombreJugador || 'Anónimo';
+      guardarRecord(nombre, G.puntos);
+      renderRanking();
+      mostrarPantalla('screen-ranking');
+    }
+
+    function renderRanking() {
+      const recs = getRecords();
+      const lista = document.getElementById('ranking-lista');
+
+      if (!recs.length) {
+        lista.innerHTML = '<p class="ranking-vacio">Aún no hay récords. ¡Sé el primero!</p>';
+        return;
+      }
+
+      const medallas = ['🥇', '🥈', '🥉'];
+      lista.innerHTML = recs.map((r, i) => `
+        <div class="ranking-item">
+          <span class="ranking-pos">${medallas[i] || (i + 1)}</span>
+          <span class="ranking-nombre">${esc(r.nombre)}</span>
+          <span class="ranking-puntos">${r.puntos}</span>
+        </div>
+      `).join('');
+    }
+
+    function esc(s) {
+      return String(s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ====================================================
+    // CONFETI
+    // ====================================================
+    function lanzarConfeti() {
+      const cols = ['#4fc3f7','#00e5a0','#ffd54f','#ff5370','#ce93d8','#80cbc4'];
+      const wrap = document.createElement('div');
+      wrap.className = 'confeti';
+      document.body.appendChild(wrap);
+
+      for (let i = 0; i < 70; i++) {
+        const p = document.createElement('div');
+        p.className = 'confeti-piece';
+        p.style.left = (Math.random() * 100) + 'vw';
+        p.style.top = '-20px';
+        p.style.background = cols[Math.floor(Math.random() * cols.length)];
+        p.style.width  = (6 + Math.random() * 9) + 'px';
+        p.style.height = (6 + Math.random() * 9) + 'px';
+        p.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+        p.style.animationDelay = (Math.random() * 1.6) + 's';
+        p.style.animationDuration = (1.8 + Math.random() * 1.4) + 's';
+        wrap.appendChild(p);
+      }
+
+      setTimeout(() => wrap.remove(), 5000);
+    }
+
+    // ====================================================
+    // EVENTOS TECLADO
+    // ====================================================
+    document.getElementById('input-nombre').addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); iniciarJuego(); }
+    });
+
+    document.getElementById('input-nombre-resultado').addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); guardarYRanking(); }
+    });
+  </script>
+</body>
+</html>
