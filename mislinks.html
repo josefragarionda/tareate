@@ -30,7 +30,7 @@
 
         .logo { font-size: 1.4rem; font-weight: 700; color: #8b74ff; letter-spacing: 1px; white-space: nowrap; }
 
-        nav { display: flex; gap: 0.7rem; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+        nav { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
 
         .sync-wrap {
             display: flex;
@@ -41,16 +41,10 @@
             white-space: nowrap;
         }
 
-        .sync-dot {
-            width: 7px; height: 7px;
-            border-radius: 50%;
-            background: #555;
-            flex-shrink: 0;
-        }
-
-        .sync-dot.ok  { background: #5abf77; }
-        .sync-dot.loading { background: #f0a030; animation: blink 0.9s infinite; }
-        .sync-dot.err { background: #e06060; }
+        .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: #555; flex-shrink: 0; }
+        .sync-dot.ok      { background: #5abf77; }
+        .sync-dot.loading { background: #f0a030; animation: blink .9s infinite; }
+        .sync-dot.err     { background: #e06060; }
 
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
 
@@ -79,9 +73,24 @@
             font-size: 0.85rem;
             transition: all 0.2s;
             display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
         }
 
         .icon-btn:hover { border-color: #8b74ff; color: #8b74ff; }
+
+        /* Badge de edición activa */
+        .edit-badge {
+            display: none;
+            font-size: 0.72rem;
+            background: rgba(139,116,255,.2);
+            color: #8b74ff;
+            border: 1px solid rgba(139,116,255,.4);
+            border-radius: 10px;
+            padding: 0.2rem 0.6rem;
+            white-space: nowrap;
+        }
+
+        body.auth-on .edit-badge { display: inline; }
 
         /* ── MAIN ── */
         main { max-width: 1100px; margin: 0 auto; padding: 2.5rem 2rem; }
@@ -103,7 +112,7 @@
             background: #1a1a2e;
             border: 1px solid #2a2a4a;
             border-radius: 14px;
-            padding: 1.6rem 1.2rem;
+            padding: 1.6rem 1.2rem 1.2rem;
             cursor: pointer;
             transition: all 0.25s;
             text-align: center;
@@ -119,12 +128,25 @@
         .category-name  { font-size: 1rem; font-weight: 600; }
         .category-count { font-size: 0.76rem; color: #666; margin-top: 0.3rem; }
 
+        /* ── CARD ACTIONS (edit/delete) ── */
+        .card-actions {
+            display: none;
+            justify-content: center;
+            gap: 0.4rem;
+            margin-top: 1rem;
+            padding-top: 0.8rem;
+            border-top: 1px solid #2a2a4a;
+        }
+
+        body.auth-on .card-actions { display: flex; }
+
         /* ── LINKS VIEW ── */
         .links-header {
             display: flex;
             align-items: center;
             gap: 1rem;
             margin-bottom: 1.8rem;
+            flex-wrap: wrap;
         }
 
         .back-btn {
@@ -141,34 +163,90 @@
 
         .back-btn:hover { border-color: #8b74ff; background: rgba(139,116,255,.08); }
 
-        .links-title { font-size: 1.7rem; font-weight: 700; }
+        .links-title { font-size: 1.7rem; font-weight: 700; flex: 1; }
+
+        /* Botón editar título de categoría (solo cuando auth-on) */
+        .edit-cat-title-btn {
+            display: none;
+            background: none;
+            border: 1px solid #2a2a4a;
+            color: #8b74ff;
+            border-radius: 8px;
+            padding: 0.35rem 0.7rem;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        body.auth-on .edit-cat-title-btn { display: inline-flex; align-items: center; gap: 0.3rem; }
+        .edit-cat-title-btn:hover { border-color: #8b74ff; background: rgba(139,116,255,.1); }
 
         .links-list { display: flex; flex-direction: column; gap: 0.65rem; }
 
-        .link-item {
+        /* Link row (wrapper) */
+        .link-row {
             background: #1a1a2e;
             border: 1px solid #2a2a4a;
             border-radius: 10px;
-            padding: 0.9rem 1.4rem;
             display: flex;
             align-items: center;
-            gap: 1rem;
-            text-decoration: none;
-            color: inherit;
             transition: all 0.2s;
         }
 
-        .link-item:hover {
+        .link-row:hover {
             border-color: #8b74ff;
             background: #1f1f38;
             transform: translateX(5px);
         }
 
+        .link-item {
+            flex: 1;
+            min-width: 0;
+            padding: 0.9rem 0.6rem 0.9rem 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+            text-decoration: none;
+            color: inherit;
+            background: none;
+            border: none;
+        }
+
         .link-favicon { width: 22px; height: 22px; border-radius: 4px; flex-shrink: 0; }
         .link-info    { flex: 1; min-width: 0; }
         .link-name    { font-weight: 600; font-size: 0.96rem; }
-        .link-url     { font-size: 0.76rem; color: #8b74ff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 0.1rem; }
-        .link-arrow   { color: #444; flex-shrink: 0; }
+        .link-arrow   { color: #555; flex-shrink: 0; font-size: 0.9rem; }
+
+        /* Link actions */
+        .link-actions {
+            display: none;
+            gap: 0.35rem;
+            padding: 0 0.8rem;
+            flex-shrink: 0;
+        }
+
+        body.auth-on .link-actions { display: flex; }
+
+        /* ── ACTION BUTTONS (edit / delete) ── */
+        .act-btn {
+            border: 1px solid #2a2a4a;
+            border-radius: 6px;
+            padding: 0.28rem 0.55rem;
+            cursor: pointer;
+            font-size: 0.76rem;
+            background: none;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            white-space: nowrap;
+        }
+
+        .act-btn.edit { color: #8b74ff; }
+        .act-btn.edit:hover { border-color: #8b74ff; background: rgba(139,116,255,.12); }
+        .act-btn.del  { color: #e06060; }
+        .act-btn.del:hover  { border-color: #e06060; background: rgba(224,96,96,.12); }
 
         /* ── EMPTY STATE ── */
         .empty-state { text-align: center; padding: 4rem 2rem; color: #555; }
@@ -178,8 +256,8 @@
         .add-section { display: grid; grid-template-columns: 1fr 1fr; gap: 1.8rem; }
         @media (max-width: 680px) { .add-section { grid-template-columns: 1fr; } }
 
-        .add-card     { background: #1a1a2e; border: 1px solid #2a2a4a; border-radius: 14px; padding: 2rem; }
-        .add-card h2  { font-size: 1.1rem; color: #8b74ff; margin-bottom: 1.5rem; }
+        .add-card    { background: #1a1a2e; border: 1px solid #2a2a4a; border-radius: 14px; padding: 2rem; }
+        .add-card h2 { font-size: 1.1rem; color: #8b74ff; margin-bottom: 1.5rem; }
 
         .form-group       { margin-bottom: 1rem; }
         .form-group label { display: block; font-size: 0.8rem; color: #888; margin-bottom: 0.35rem; }
@@ -283,7 +361,7 @@
         .modal-icon { font-size: 2.3rem; text-align: center; margin-bottom: 0.8rem; }
         .modal h2   { font-size: 1.25rem; text-align: center; margin-bottom: 0.4rem; }
 
-        .modal-sub  {
+        .modal-sub {
             color: #777;
             font-size: 0.86rem;
             text-align: center;
@@ -291,7 +369,25 @@
             line-height: 1.5;
         }
 
-        .modal-input {
+        /* Campos dentro de modal */
+        .modal-field { margin-bottom: 0.9rem; margin-top: 0.2rem; }
+        .modal-field label { display: block; font-size: 0.8rem; color: #888; margin-bottom: 0.35rem; }
+
+        .modal-field input {
+            width: 100%;
+            background: #0f0f1a;
+            border: 1px solid #2a2a4a;
+            border-radius: 8px;
+            padding: 0.65rem 1rem;
+            color: #e0e0e0;
+            font-size: 0.92rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .modal-field input:focus { border-color: #8b74ff; }
+
+        .modal-input { /* para el campo de contraseña y PAT */
             width: 100%;
             background: #0f0f1a;
             border: 1px solid #2a2a4a;
@@ -306,7 +402,7 @@
         .modal-input.pw { text-align: center; letter-spacing: 6px; font-size: 1.1rem; }
         .modal-input:focus { border-color: #8b74ff; }
 
-        .modal-err  { color: #e06060; font-size: 0.8rem; min-height: 1.1rem; margin-bottom: 0.8rem; text-align: center; }
+        .modal-err { color: #e06060; font-size: 0.8rem; min-height: 1.1rem; margin-bottom: 0.8rem; text-align: center; }
 
         .modal-btns { display: flex; gap: 0.8rem; }
 
@@ -341,10 +437,11 @@
             transition: opacity 0.2s;
         }
 
-        .m-confirm:hover     { opacity: 0.85; }
-        .m-confirm:disabled  { opacity: 0.55; cursor: not-allowed; }
+        .m-confirm:hover    { opacity: 0.85; }
+        .m-confirm:disabled { opacity: 0.55; cursor: not-allowed; }
+        .m-confirm.danger   { background: #b03030; }
 
-        /* Info box (PAT instructions) */
+        /* Info box (PAT) */
         .info-box {
             background: #0f0f1a;
             border: 1px solid #2a2a4a;
@@ -360,7 +457,7 @@
         .info-box a      { color: #8b74ff; text-decoration: none; }
         .info-box a:hover { text-decoration: underline; }
 
-        /* spinner */
+        /* Spinner */
         .spin {
             display: inline-block;
             width: 14px; height: 14px;
@@ -386,6 +483,7 @@
 <header>
     <div class="logo">🔗 MisLinks</div>
     <nav>
+        <span class="edit-badge">✏ Modo edición</span>
         <div class="sync-wrap">
             <div class="sync-dot" id="sync-dot"></div>
             <span id="sync-lbl">–</span>
@@ -412,6 +510,7 @@
         <div class="links-header">
             <button class="back-btn" onclick="goHome()">← Volver</button>
             <div class="links-title" id="links-title"></div>
+            <button class="edit-cat-title-btn" id="edit-cat-title-btn" onclick="editCurrentCat()">✏ Editar categoría</button>
         </div>
         <div class="links-list" id="links-list"></div>
     </div>
@@ -467,7 +566,7 @@
     <div class="modal">
         <div class="modal-icon">🔒</div>
         <h2>Acceso protegido</h2>
-        <p class="modal-sub">Introduce la contraseña para acceder a la sección Añadir</p>
+        <p class="modal-sub">Introduce la contraseña para editar</p>
         <input class="modal-input pw" type="password" id="pw-inp"
                placeholder="••••" onkeydown="if(event.key==='Enter')checkPw()">
         <div class="modal-err" id="pw-err"></div>
@@ -483,13 +582,13 @@
     <div class="modal">
         <div class="modal-icon">🔑</div>
         <h2>Token de GitHub</h2>
-        <p class="modal-sub">Necesario para que los cambios se guarden en el repositorio y sean visibles desde cualquier dispositivo.</p>
+        <p class="modal-sub">Necesario para guardar los cambios en el repositorio.</p>
         <div class="info-box">
             1. Ve a <a href="https://github.com/settings/tokens/new" target="_blank" rel="noopener">github.com/settings/tokens</a><br>
             2. En <strong>Note</strong> pon un nombre (ej. "MisLinks")<br>
-            3. Selecciona el permiso <strong>repo</strong> (o <strong>public_repo</strong> si el repo es público)<br>
+            3. Selecciona el permiso <strong>repo</strong> (o <strong>public_repo</strong>)<br>
             4. Haz clic en <strong>Generate token</strong> y pégalo aquí<br>
-            <span style="color:#666;font-size:.75rem">El token se guarda solo en este navegador (localStorage). Nunca se transmite a ningún servidor excepto a la API de GitHub.</span>
+            <span style="color:#666;font-size:.75rem">Se guarda solo en este navegador (localStorage).</span>
         </div>
         <input class="modal-input" type="password" id="pat-inp"
                placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
@@ -502,20 +601,83 @@
     </div>
 </div>
 
+<!-- ══ MODAL: EDITAR CATEGORÍA ══════════════════════════════════════ -->
+<div class="modal-overlay" id="mod-edit-cat" onclick="if(event.target===this)closeModal('mod-edit-cat')">
+    <div class="modal">
+        <div class="modal-icon">✏️</div>
+        <h2>Editar Categoría</h2>
+        <div class="modal-field">
+            <label>Nombre</label>
+            <input type="text" id="edit-cat-name" onkeydown="if(event.key==='Enter')saveEditCat()">
+        </div>
+        <div class="modal-field">
+            <label>Emoji</label>
+            <input type="text" id="edit-cat-emoji" maxlength="4" onkeydown="if(event.key==='Enter')saveEditCat()">
+        </div>
+        <div class="modal-err" id="edit-cat-err"></div>
+        <div class="modal-btns">
+            <button class="m-cancel" onclick="closeModal('mod-edit-cat')">Cancelar</button>
+            <button class="m-confirm" id="edit-cat-save" onclick="saveEditCat()">Guardar cambios</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══ MODAL: EDITAR ENLACE ═════════════════════════════════════════ -->
+<div class="modal-overlay" id="mod-edit-link" onclick="if(event.target===this)closeModal('mod-edit-link')">
+    <div class="modal">
+        <div class="modal-icon">✏️</div>
+        <h2>Editar Enlace</h2>
+        <div class="modal-field">
+            <label>Nombre</label>
+            <input type="text" id="edit-link-name" onkeydown="if(event.key==='Enter')saveEditLink()">
+        </div>
+        <div class="modal-field">
+            <label>URL</label>
+            <input type="url" id="edit-link-url" onkeydown="if(event.key==='Enter')saveEditLink()">
+        </div>
+        <div class="modal-err" id="edit-link-err"></div>
+        <div class="modal-btns">
+            <button class="m-cancel" onclick="closeModal('mod-edit-link')">Cancelar</button>
+            <button class="m-confirm" id="edit-link-save" onclick="saveEditLink()">Guardar cambios</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══ MODAL: CONFIRMAR ELIMINACIÓN ════════════════════════════════ -->
+<div class="modal-overlay" id="mod-del">
+    <div class="modal">
+        <div class="modal-icon">🗑️</div>
+        <h2>¿Eliminar?</h2>
+        <p class="modal-sub" id="del-msg" style="margin-bottom:1rem;"></p>
+        <div class="modal-err" id="del-err"></div>
+        <div class="modal-btns">
+            <button class="m-cancel" onclick="closeModal('mod-del')">Cancelar</button>
+            <button class="m-confirm danger" id="del-btn" onclick="executeDelete()">Eliminar</button>
+        </div>
+    </div>
+</div>
+
 <!-- ══ SCRIPT ════════════════════════════════════════════════════════ -->
 <script>
 // ── CONFIGURACIÓN ─────────────────────────────────────────────────────
 const OWNER     = 'josefragarionda';
 const REPO      = 'tareate';
 const BRANCH    = 'main';
-const DATA_PATH = 'mislinks/data.json';   // ruta del archivo de datos dentro del repo
+const DATA_PATH = 'mislinks/data.json';
 const PW        = '1234';
 // ──────────────────────────────────────────────────────────────────────
 
 let PAT  = localStorage.getItem('gh_pat') || '';
 let auth = false;
-let data = { cats: [] };  // datos en memoria
-let sha  = null;          // SHA del archivo en GitHub (necesario para actualizar)
+let data = { cats: [] };
+let sha  = null;
+
+// Estado de edición
+let currentCatId     = null;  // categoría actualmente abierta
+let editingCatId     = null;  // categoría en edición
+let editingLinkCatId = null;  // categoría del enlace en edición
+let editingLinkId    = null;  // enlace en edición
+let pendingDelete    = null;  // función async pendiente de confirmación
 
 /* ──────────────────────────────────────────────────────────────────
    GITHUB API
@@ -550,7 +712,6 @@ async function ghPut(newData) {
     );
 
     if (res.status === 409 || res.status === 422) {
-        // Conflicto de SHA → recargar e intentar de nuevo
         await loadData(false);
         return ghPut(newData);
     }
@@ -565,10 +726,10 @@ async function ghPut(newData) {
 }
 
 /* ──────────────────────────────────────────────────────────────────
-   CARGAR / GUARDAR DATOS
+   CARGAR / GUARDAR
    ────────────────────────────────────────────────────────────────── */
 
-async function loadData(showToastOnOk = true) {
+async function loadData(showToast_ = true) {
     setSyncState('loading', 'Cargando…');
     try {
         const file = await ghGet();
@@ -581,7 +742,7 @@ async function loadData(showToastOnOk = true) {
             data = JSON.parse(decoded);
         }
         setSyncState('ok', 'Sincronizado');
-        if (showToastOnOk) toast('Datos cargados', 'ok');
+        if (showToast_) toast('Datos cargados', 'ok');
     } catch (e) {
         setSyncState('err', 'Error');
         toast('Error al cargar: ' + e.message, 'err');
@@ -606,17 +767,19 @@ function showView(id) {
 }
 
 function goHome() {
+    currentCatId = null;
     renderHome();
     showView('home');
 }
 
 async function reload() {
     await loadData(true);
-    renderHome();
+    if (currentCatId) openCat(currentCatId);
+    else renderHome();
 }
 
 /* ──────────────────────────────────────────────────────────────────
-   INICIO
+   INICIO — CATEGORÍAS
    ────────────────────────────────────────────────────────────────── */
 
 function renderHome() {
@@ -633,24 +796,31 @@ function renderHome() {
         return;
     }
     grid.innerHTML = data.cats.map(c => `
-        <div class="category-card" onclick="openCat('${esc(c.id)}')">
+        <div class="category-card" onclick="openCat('${c.id}')">
             <div class="category-icon">${c.emoji || '📁'}</div>
             <div class="category-name">${esc(c.name)}</div>
             <div class="category-count">${c.links.length} enlace${c.links.length !== 1 ? 's' : ''}</div>
+            <div class="card-actions" onclick="event.stopPropagation()">
+                <button class="act-btn edit" onclick="startEditCat('${c.id}')">✏ Editar</button>
+                <button class="act-btn del"  onclick="startDeleteCat('${c.id}')">🗑 Borrar</button>
+            </div>
         </div>`).join('');
 }
 
 /* ──────────────────────────────────────────────────────────────────
-   CATEGORÍA → ENLACES
+   ENLACES DE UNA CATEGORÍA
    ────────────────────────────────────────────────────────────────── */
 
 function openCat(id) {
     const cat = data.cats.find(c => c.id === id);
-    if (!cat) return;
+    if (!cat) { goHome(); return; }
 
+    currentCatId = id;
     document.getElementById('links-title').textContent = (cat.emoji || '📁') + ' ' + cat.name;
+    document.getElementById('edit-cat-title-btn').dataset.catid = id;
 
     const list = document.getElementById('links-list');
+
     if (!cat.links.length) {
         list.innerHTML = `
             <div class="empty-state">
@@ -665,16 +835,22 @@ function openCat(id) {
                 ? `<img class="link-favicon" src="https://www.google.com/s2/favicons?domain=${host}&sz=32" onerror="this.style.display='none'" alt="">`
                 : '';
             return `
-            <a href="${esc(lnk.url)}" class="link-item" target="_blank" rel="noopener noreferrer">
-                ${fav}
-                <div class="link-info">
-                    <div class="link-name">${esc(lnk.name)}</div>
-                    <div class="link-url">${esc(lnk.url)}</div>
+            <div class="link-row">
+                <a href="${esc(lnk.url)}" class="link-item" target="_blank" rel="noopener noreferrer">
+                    ${fav}
+                    <div class="link-info">
+                        <div class="link-name">${esc(lnk.name)}</div>
+                    </div>
+                    <span class="link-arrow">↗</span>
+                </a>
+                <div class="link-actions">
+                    <button class="act-btn edit" onclick="startEditLink('${esc(id)}','${esc(lnk.id)}')">✏</button>
+                    <button class="act-btn del"  onclick="startDeleteLink('${esc(id)}','${esc(lnk.id)}')">🗑</button>
                 </div>
-                <span class="link-arrow">↗</span>
-            </a>`;
+            </div>`;
         }).join('');
     }
+
     showView('links');
 }
 
@@ -699,22 +875,19 @@ async function addCategory() {
 
     const btn = document.getElementById('btn-cat');
     setBtnLoading(btn, true, 'Guardando…');
-
     data.cats.push({ id: 'c' + Date.now(), name, emoji: emoji || '📁', links: [] });
 
     try {
         await saveData();
         document.getElementById('cat-name').value  = '';
         document.getElementById('cat-emoji').value = '';
-        setFeedback(msg, '✓ Categoría creada y guardada en GitHub', true);
+        setFeedback(msg, '✓ Categoría creada', true);
         openAdd();
     } catch (e) {
         data.cats.pop();
         setFeedback(msg, 'Error: ' + e.message, false);
-        toast('Error al guardar: ' + e.message, 'err');
         setSyncState('err', 'Error');
     }
-
     setBtnLoading(btn, false, 'Crear Categoría');
 }
 
@@ -724,9 +897,9 @@ async function addLink() {
     const url   = document.getElementById('link-url').value.trim();
     const msg   = document.getElementById('link-msg');
 
-    if (!catId)              { setFeedback(msg, 'Selecciona una categoría', false);              return; }
-    if (!name)               { setFeedback(msg, 'Introduce un nombre para el enlace', false);    return; }
-    if (!url.startsWith('http')) { setFeedback(msg, 'Introduce una URL válida (https://…)', false); return; }
+    if (!catId)                  { setFeedback(msg, 'Selecciona una categoría', false); return; }
+    if (!name)                   { setFeedback(msg, 'Introduce un nombre', false); return; }
+    if (!url.startsWith('http')) { setFeedback(msg, 'URL válida (https://…)', false); return; }
 
     const btn = document.getElementById('btn-link');
     setBtnLoading(btn, true, 'Guardando…');
@@ -739,30 +912,186 @@ async function addLink() {
         await saveData();
         document.getElementById('link-name').value = '';
         document.getElementById('link-url').value  = '';
-        setFeedback(msg, '✓ Enlace añadido y guardado en GitHub', true);
+        setFeedback(msg, '✓ Enlace añadido', true);
     } catch (e) {
         cat.links.pop();
         setFeedback(msg, 'Error: ' + e.message, false);
-        toast('Error al guardar: ' + e.message, 'err');
         setSyncState('err', 'Error');
     }
-
     setBtnLoading(btn, false, 'Añadir Enlace');
 }
 
-function setFeedback(el, txt, ok) {
-    el.textContent  = txt;
-    el.className    = 'feedback ' + (ok ? 'ok' : 'err');
-    setTimeout(() => { el.textContent = ''; el.className = 'feedback'; }, 4000);
+/* ──────────────────────────────────────────────────────────────────
+   EDITAR CATEGORÍA
+   ────────────────────────────────────────────────────────────────── */
+
+function editCurrentCat() {
+    const id = document.getElementById('edit-cat-title-btn').dataset.catid;
+    if (id) startEditCat(id);
 }
 
-function setBtnLoading(btn, loading, label) {
-    btn.disabled   = loading;
-    btn.innerHTML  = loading ? `<span class="spin"></span> ${label}` : label;
+function startEditCat(catId) {
+    const cat = data.cats.find(c => c.id === catId);
+    if (!cat) return;
+    editingCatId = catId;
+    document.getElementById('edit-cat-name').value  = cat.name;
+    document.getElementById('edit-cat-emoji').value = cat.emoji || '';
+    document.getElementById('edit-cat-err').textContent = '';
+    openModal('mod-edit-cat');
+    setTimeout(() => { document.getElementById('edit-cat-name').focus(); document.getElementById('edit-cat-name').select(); }, 80);
+}
+
+async function saveEditCat() {
+    const name  = document.getElementById('edit-cat-name').value.trim();
+    const emoji = document.getElementById('edit-cat-emoji').value.trim();
+    if (!name) { document.getElementById('edit-cat-err').textContent = 'El nombre es obligatorio'; return; }
+
+    const btn = document.getElementById('edit-cat-save');
+    setBtnLoading(btn, true, 'Guardando…');
+
+    const cat  = data.cats.find(c => c.id === editingCatId);
+    const prev = { name: cat.name, emoji: cat.emoji };
+    cat.name  = name;
+    cat.emoji = emoji || '📁';
+
+    try {
+        await saveData();
+        closeModal('mod-edit-cat');
+        toast('Categoría actualizada ✓', 'ok');
+        renderHome();
+        // Actualizar título si estamos viendo sus enlaces
+        if (currentCatId === editingCatId) {
+            document.getElementById('links-title').textContent = cat.emoji + ' ' + cat.name;
+        }
+    } catch (e) {
+        Object.assign(cat, prev);
+        document.getElementById('edit-cat-err').textContent = 'Error: ' + e.message;
+    }
+    setBtnLoading(btn, false, 'Guardar cambios');
 }
 
 /* ──────────────────────────────────────────────────────────────────
-   MODALES
+   EDITAR ENLACE
+   ────────────────────────────────────────────────────────────────── */
+
+function startEditLink(catId, linkId) {
+    const cat  = data.cats.find(c => c.id === catId);
+    const link = cat?.links.find(l => l.id === linkId);
+    if (!link) return;
+    editingLinkCatId = catId;
+    editingLinkId    = linkId;
+    document.getElementById('edit-link-name').value = link.name;
+    document.getElementById('edit-link-url').value  = link.url;
+    document.getElementById('edit-link-err').textContent = '';
+    openModal('mod-edit-link');
+    setTimeout(() => { document.getElementById('edit-link-name').focus(); document.getElementById('edit-link-name').select(); }, 80);
+}
+
+async function saveEditLink() {
+    const name = document.getElementById('edit-link-name').value.trim();
+    const url  = document.getElementById('edit-link-url').value.trim();
+    if (!name)                   { document.getElementById('edit-link-err').textContent = 'El nombre es obligatorio'; return; }
+    if (!url.startsWith('http')) { document.getElementById('edit-link-err').textContent = 'Introduce una URL válida (https://…)'; return; }
+
+    const btn = document.getElementById('edit-link-save');
+    setBtnLoading(btn, true, 'Guardando…');
+
+    const cat  = data.cats.find(c => c.id === editingLinkCatId);
+    const link = cat?.links.find(l => l.id === editingLinkId);
+    const prev = { name: link.name, url: link.url };
+    link.name = name;
+    link.url  = url;
+
+    try {
+        await saveData();
+        closeModal('mod-edit-link');
+        toast('Enlace actualizado ✓', 'ok');
+        openCat(editingLinkCatId);
+    } catch (e) {
+        Object.assign(link, prev);
+        document.getElementById('edit-link-err').textContent = 'Error: ' + e.message;
+    }
+    setBtnLoading(btn, false, 'Guardar cambios');
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   ELIMINAR
+   ────────────────────────────────────────────────────────────────── */
+
+function startDeleteCat(catId) {
+    const cat = data.cats.find(c => c.id === catId);
+    if (!cat) return;
+    const n = cat.links.length;
+    confirmDelete(
+        `¿Eliminar "${cat.name}"${n ? ` y sus ${n} enlace${n > 1 ? 's' : ''}` : ''}? Esta acción no se puede deshacer.`,
+        async () => {
+            const idx     = data.cats.findIndex(c => c.id === catId);
+            const removed = data.cats.splice(idx, 1)[0];
+            try {
+                await saveData();
+                return { type: 'cat', catId };
+            } catch (e) {
+                data.cats.splice(idx, 0, removed);
+                throw e;
+            }
+        }
+    );
+}
+
+function startDeleteLink(catId, linkId) {
+    const cat  = data.cats.find(c => c.id === catId);
+    const link = cat?.links.find(l => l.id === linkId);
+    if (!link) return;
+    confirmDelete(
+        `¿Eliminar el enlace "${link.name}"? Esta acción no se puede deshacer.`,
+        async () => {
+            const idx     = cat.links.findIndex(l => l.id === linkId);
+            const removed = cat.links.splice(idx, 1)[0];
+            try {
+                await saveData();
+                return { type: 'link', catId };
+            } catch (e) {
+                cat.links.splice(idx, 0, removed);
+                throw e;
+            }
+        }
+    );
+}
+
+function confirmDelete(msg, fn) {
+    document.getElementById('del-msg').textContent = msg;
+    document.getElementById('del-err').textContent = '';
+    pendingDelete = fn;
+    openModal('mod-del');
+}
+
+async function executeDelete() {
+    if (!pendingDelete) return;
+    const btn = document.getElementById('del-btn');
+    setBtnLoading(btn, true, 'Eliminando…');
+    document.getElementById('del-err').textContent = '';
+
+    try {
+        const result = await pendingDelete();
+        closeModal('mod-del');
+        toast('Eliminado correctamente', 'ok');
+
+        if (result.type === 'cat') {
+            if (currentCatId === result.catId) goHome();
+            else renderHome();
+        } else if (result.type === 'link') {
+            openCat(result.catId);
+        }
+    } catch (e) {
+        document.getElementById('del-err').textContent = 'Error: ' + e.message;
+    }
+
+    pendingDelete = null;
+    setBtnLoading(btn, false, 'Eliminar');
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   CONTRASEÑA Y ACCESO
    ────────────────────────────────────────────────────────────────── */
 
 function requestAdd() {
@@ -776,7 +1105,12 @@ function requestAdd() {
 function checkPw() {
     if (document.getElementById('pw-inp').value === PW) {
         auth = true;
+        document.body.classList.add('auth-on');
         closeModal('mod-pw');
+        // Repintar la vista actual con botones de edición
+        if (currentCatId) openCat(currentCatId);
+        else renderHome();
+        // Ir a añadir si no hay PAT; si hay PAT, ir directamente a añadir
         if (!PAT) openPatModal();
         else      openAdd();
     } else {
@@ -810,7 +1144,6 @@ async function savePat() {
     setBtnLoading(btn, true, 'Verificando…');
 
     try {
-        // Verificar que el token tiene acceso al repositorio
         const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}`, {
             headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.github.v3+json' }
         });
@@ -819,14 +1152,10 @@ async function savePat() {
         PAT = token;
         localStorage.setItem('gh_pat', PAT);
         closeModal('mod-pat');
-        toast('Token guardado correctamente ✓', 'ok');
-
-        // Recargar datos con el nuevo token (por si el repo es privado)
+        toast('Token guardado ✓', 'ok');
         await loadData(false);
         renderHome();
-
         if (auth) openAdd();
-
     } catch (e) {
         document.getElementById('pat-err').textContent = e.message;
     }
@@ -838,17 +1167,13 @@ function openModal(id)  { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
 /* ──────────────────────────────────────────────────────────────────
-   SYNC STATE
+   SYNC + TOAST + UTILS
    ────────────────────────────────────────────────────────────────── */
 
 function setSyncState(state, label) {
     document.getElementById('sync-dot').className = 'sync-dot ' + state;
     document.getElementById('sync-lbl').textContent = label;
 }
-
-/* ──────────────────────────────────────────────────────────────────
-   TOAST
-   ────────────────────────────────────────────────────────────────── */
 
 function toast(msg, type = 'ok') {
     const el = document.createElement('div');
@@ -858,9 +1183,16 @@ function toast(msg, type = 'ok') {
     setTimeout(() => el.remove(), 4500);
 }
 
-/* ──────────────────────────────────────────────────────────────────
-   UTILIDADES
-   ────────────────────────────────────────────────────────────────── */
+function setFeedback(el, txt, ok) {
+    el.textContent = txt;
+    el.className   = 'feedback ' + (ok ? 'ok' : 'err');
+    setTimeout(() => { el.textContent = ''; el.className = 'feedback'; }, 4000);
+}
+
+function setBtnLoading(btn, loading, label) {
+    btn.disabled  = loading;
+    btn.innerHTML = loading ? `<span class="spin"></span> ${label}` : label;
+}
 
 function esc(s) {
     return String(s)
