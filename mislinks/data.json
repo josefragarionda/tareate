@@ -4,7 +4,13 @@
       "id": "c1771931806388",
       "name": "APRENDER JUGANDO",
       "emoji": "📚",
-      "links": []
+      "links": [
+        {
+          "id": "l1771931835906",
+          "name": "CAPITALES DE EUROPA",
+          "url": "https://josefragarionda.github.io/tareate/capitales"
+        }
+      ]
     }
   ]
 }
