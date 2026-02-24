@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Personas - DB Local</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border-left: 4px solid #2196f3;
+        }
+
+        .info p {
+            color: #1976d2;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .buttons-top {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #2196f3;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1976d2;
+        }
+
+        .btn-success {
+            background: #4caf50;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #388e3c;
+        }
+
+        .btn-danger {
+            background: #f44336;
+            color: white;
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+
+        .btn-danger:hover {
+            background: #d32f2f;
+        }
+
+        .form-section {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+
+        .form-section h2 {
+            color: #555;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            color: #666;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        input, select {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #2196f3;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        thead {
+            background: #2196f3;
+            color: white;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        td {
+            font-size: 14px;
+            color: #333;
+        }
+
+        tbody tr:hover {
+            background: #f5f5f5;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-style: italic;
+        }
+
+        .status {
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 10px;
+            display: inline-block;
+        }
+
+        .status.success {
+            background: #c8e6c9;
+            color: #2e7d32;
+        }
+
+        .status.error {
+            background: #ffcdd2;
+            color: #c62828;
+        }
+
+        .status.info {
+            background: #bbdefb;
+            color: #1565c0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Gestión de Personas - Base de Datos Local</h1>
+        
+        <div class="info">
+            <p><strong>📁 Sistema de archivos local:</strong> Los datos se guardan en un archivo JSON en tu ordenador.</p>
+            <p><strong>💾 Primer uso:</strong> Haz clic en "Cargar Base de Datos" y selecciona o crea un archivo .json</p>
+            <p><strong>✅ Portátil:</strong> Lleva la carpeta con el HTML y el JSON donde quieras</p>
+        </div>
+
+        <div class="buttons-top">
+            <button class="btn-primary" onclick="loadDatabase()">📂 Cargar Base de Datos</button>
+            <button class="btn-success" onclick="saveDatabase()">💾 Guardar Cambios</button>
+        </div>
+
+        <div id="status"></div>
+
+        <div class="form-section">
+            <h2>➕ Añadir Nueva Persona</h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Nombre</label>
+                    <input type="text" id="nombre" placeholder="Nombre completo">
+                </div>
+                <div class="form-group">
+                    <label>UET</label>
+                    <input type="number" id="uet" placeholder="Número UET" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>Tipo de Contrato</label>
+                    <select id="tipoContrato">
+                        <option value="">Seleccionar...</option>
+                        <option value="Indefinido">Indefinido</option>
+                        <option value="Temporal">Temporal</option>
+                        <option value="Prácticas">Prácticas</option>
+                        <option value="Formación">Formación</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Antigüedad Contrato (DD/MM/AA)</label>
+                    <input type="text" id="antiguedad" placeholder="DD/MM/AA" maxlength="8">
+                </div>
+            </div>
+            <button class="btn-success" onclick="addPerson()">➕ Añadir Persona</button>
+        </div>
+
+        <div class="table-container">
+            <h2>👥 Lista de Personas</h2>
+            <table id="personTable">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>UET</th>
+                        <th>Tipo de Contrato</th>
+                        <th>Antigüedad Contrato</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr>
+                        <td colspan="5" class="no-data">No hay datos. Carga una base de datos o añade personas.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let fileHandle = null;
+        let persons = [];
+
+        // Cargar base de datos desde archivo
+        async function loadDatabase() {
+            try {
+                // Solicitar permiso para abrir archivo
+                [fileHandle] = await window.showOpenFilePicker({
+                    types: [{
+                        description: 'JSON Database',
+                        accept: {'application/json': ['.json']}
+                    }],
+                    multiple: false
+                });
+
+                const file = await fileHandle.getFile();
+                const content = await file.text();
+                
+                if (content.trim() === '') {
+                    persons = [];
+                } else {
+                    persons = JSON.parse(content);
+                }
+
+                renderTable();
+                showStatus('✅ Base de datos cargada correctamente', 'success');
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    showStatus('❌ Error al cargar: ' + error.message, 'error');
+                }
+            }
+        }
+
+        // Guardar base de datos en archivo
+        async function saveDatabase() {
+            try {
+                if (!fileHandle) {
+                    // Si no hay archivo abierto, crear uno nuevo
+                    fileHandle = await window.showSaveFilePicker({
+                        suggestedName: 'personas.json',
+                        types: [{
+                            description: 'JSON Database',
+                            accept: {'application/json': ['.json']}
+                        }]
+                    });
+                }
+
+                const writable = await fileHandle.createWritable();
+                await writable.write(JSON.stringify(persons, null, 2));
+                await writable.close();
+
+                showStatus('💾 Datos guardados correctamente', 'success');
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    showStatus('❌ Error al guardar: ' + error.message, 'error');
+                }
+            }
+        }
+
+        // Añadir persona
+        function addPerson() {
+            const nombre = document.getElementById('nombre').value.trim();
+            const uet = parseFloat(document.getElementById('uet').value);
+            const tipoContrato = document.getElementById('tipoContrato').value;
+            const antiguedad = document.getElementById('antiguedad').value.trim();
+
+            if (!nombre || isNaN(uet) || !tipoContrato || !antiguedad) {
+                showStatus('⚠️ Por favor, completa todos los campos', 'error');
+                return;
+            }
+
+            // Validar formato de fecha DD/MM/AA
+            const dateRegex = /^\d{2}\/\d{2}\/\d{2}$/;
+            if (!dateRegex.test(antiguedad)) {
+                showStatus('⚠️ Formato de fecha incorrecto. Usa DD/MM/AA', 'error');
+                return;
+            }
+
+            const person = {
+                id: Date.now(),
+                nombre,
+                uet,
+                tipoContrato,
+                antiguedad
+            };
+
+            persons.push(person);
+            renderTable();
+            clearForm();
+            showStatus('✅ Persona añadida. No olvides guardar los cambios.', 'info');
+        }
+
+        // Eliminar persona
+        function deletePerson(id) {
+            if (confirm('¿Estás seguro de eliminar esta persona?')) {
+                persons = persons.filter(p => p.id !== id);
+                renderTable();
+                showStatus('🗑️ Persona eliminada. No olvides guardar los cambios.', 'info');
+            }
+        }
+
+        // Renderizar tabla
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            
+            if (persons.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="no-data">No hay datos. Añade personas a la base de datos.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = persons.map(person => `
+                <tr>
+                    <td>${person.nombre}</td>
+                    <td>${person.uet}</td>
+                    <td>${person.tipoContrato}</td>
+                    <td>${person.antiguedad}</td>
+                    <td>
+                        <button class="btn-danger" onclick="deletePerson(${person.id})">🗑️ Eliminar</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Limpiar formulario
+        function clearForm() {
+            document.getElementById('nombre').value = '';
+            document.getElementById('uet').value = '';
+            document.getElementById('tipoContrato').value = '';
+            document.getElementById('antiguedad').value = '';
+        }
+
+        // Mostrar mensaje de estado
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+            setTimeout(() => {
+                statusDiv.innerHTML = '';
+            }, 5000);
+        }
+
+        // Validar formato de fecha mientras escribe
+        document.getElementById('antiguedad').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length >= 2) {
+                value = value.slice(0, 2) + '/' + value.slice(2);
+            }
+            if (value.length >= 5) {
+                value = value.slice(0, 5) + '/' + value.slice(5, 7);
+            }
+            e.target.value = value;
+        });
+    </script>
+</body>
+</html>
