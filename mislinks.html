@@ -14,7 +14,7 @@
             min-height: 100vh;
         }
 
-        /* HEADER */
+        /* ── HEADER ── */
         header {
             background: #12122a;
             border-bottom: 1px solid #2a2a4a;
@@ -25,57 +25,77 @@
             position: sticky;
             top: 0;
             z-index: 100;
+            gap: 1rem;
         }
 
-        .logo {
-            font-size: 1.4rem;
-            font-weight: 700;
-            color: #8b74ff;
-            letter-spacing: 1px;
+        .logo { font-size: 1.4rem; font-weight: 700; color: #8b74ff; letter-spacing: 1px; white-space: nowrap; }
+
+        nav { display: flex; gap: 0.7rem; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+
+        .sync-wrap {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.75rem;
+            color: #555;
+            white-space: nowrap;
         }
 
-        nav { display: flex; gap: 0.8rem; }
+        .sync-dot {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: #555;
+            flex-shrink: 0;
+        }
+
+        .sync-dot.ok  { background: #5abf77; }
+        .sync-dot.loading { background: #f0a030; animation: blink 0.9s infinite; }
+        .sync-dot.err { background: #e06060; }
+
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
 
         .nav-btn {
             background: none;
             border: 1px solid #3a3a5a;
             color: #aaa;
-            padding: 0.45rem 1.1rem;
+            padding: 0.4rem 1rem;
             border-radius: 20px;
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 0.88rem;
             transition: all 0.2s;
+            white-space: nowrap;
         }
 
-        .nav-btn:hover { border-color: #8b74ff; color: #8b74ff; }
+        .nav-btn:hover  { border-color: #8b74ff; color: #8b74ff; }
         .nav-btn.active { background: #8b74ff; border-color: #8b74ff; color: white; }
 
-        /* MAIN */
-        main {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 2.5rem 2rem;
+        .icon-btn {
+            background: none;
+            border: 1px solid #2a2a4a;
+            color: #666;
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            display: flex; align-items: center; justify-content: center;
         }
+
+        .icon-btn:hover { border-color: #8b74ff; color: #8b74ff; }
+
+        /* ── MAIN ── */
+        main { max-width: 1100px; margin: 0 auto; padding: 2.5rem 2rem; }
 
         .view { display: none; }
         .view.active { display: block; }
 
-        .page-title {
-            font-size: 1.9rem;
-            font-weight: 700;
-            margin-bottom: 0.4rem;
-        }
+        .page-title    { font-size: 1.9rem; font-weight: 700; margin-bottom: 0.4rem; }
+        .page-subtitle { color: #777; font-size: 0.92rem; margin-bottom: 2rem; }
 
-        .page-subtitle {
-            color: #777;
-            font-size: 0.95rem;
-            margin-bottom: 2rem;
-        }
-
-        /* CATEGORIES GRID */
+        /* ── CATEGORIES GRID ── */
         .categories-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
             gap: 1.2rem;
         }
 
@@ -92,24 +112,14 @@
         .category-card:hover {
             border-color: #8b74ff;
             transform: translateY(-4px);
-            box-shadow: 0 10px 28px rgba(139, 116, 255, 0.18);
+            box-shadow: 0 10px 28px rgba(139,116,255,.2);
         }
 
-        .category-icon { font-size: 2.6rem; margin-bottom: 0.7rem; }
+        .category-icon  { font-size: 2.5rem; margin-bottom: 0.65rem; }
+        .category-name  { font-size: 1rem; font-weight: 600; }
+        .category-count { font-size: 0.76rem; color: #666; margin-top: 0.3rem; }
 
-        .category-name {
-            font-size: 1rem;
-            font-weight: 600;
-            color: #e0e0e0;
-        }
-
-        .category-count {
-            font-size: 0.78rem;
-            color: #666;
-            margin-top: 0.3rem;
-        }
-
-        /* LINKS VIEW */
+        /* ── LINKS VIEW ── */
         .links-header {
             display: flex;
             align-items: center;
@@ -122,37 +132,30 @@
             border: 1px solid #2a2a4a;
             color: #8b74ff;
             cursor: pointer;
-            font-size: 0.9rem;
-            padding: 0.45rem 0.9rem;
+            font-size: 0.88rem;
+            padding: 0.4rem 0.9rem;
             border-radius: 8px;
             transition: all 0.2s;
             white-space: nowrap;
         }
 
-        .back-btn:hover { border-color: #8b74ff; background: rgba(139,116,255,0.08); }
+        .back-btn:hover { border-color: #8b74ff; background: rgba(139,116,255,.08); }
 
-        .links-title {
-            font-size: 1.7rem;
-            font-weight: 700;
-        }
+        .links-title { font-size: 1.7rem; font-weight: 700; }
 
-        .links-list {
-            display: flex;
-            flex-direction: column;
-            gap: 0.7rem;
-        }
+        .links-list { display: flex; flex-direction: column; gap: 0.65rem; }
 
         .link-item {
             background: #1a1a2e;
             border: 1px solid #2a2a4a;
             border-radius: 10px;
-            padding: 1rem 1.4rem;
+            padding: 0.9rem 1.4rem;
             display: flex;
             align-items: center;
             gap: 1rem;
             text-decoration: none;
-            transition: all 0.2s;
             color: inherit;
+            transition: all 0.2s;
         }
 
         .link-item:hover {
@@ -161,72 +164,25 @@
             transform: translateX(5px);
         }
 
-        .link-favicon {
-            width: 22px;
-            height: 22px;
-            border-radius: 4px;
-            flex-shrink: 0;
-        }
+        .link-favicon { width: 22px; height: 22px; border-radius: 4px; flex-shrink: 0; }
+        .link-info    { flex: 1; min-width: 0; }
+        .link-name    { font-weight: 600; font-size: 0.96rem; }
+        .link-url     { font-size: 0.76rem; color: #8b74ff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 0.1rem; }
+        .link-arrow   { color: #444; flex-shrink: 0; }
 
-        .link-info { flex: 1; min-width: 0; }
+        /* ── EMPTY STATE ── */
+        .empty-state { text-align: center; padding: 4rem 2rem; color: #555; }
+        .empty-icon  { font-size: 3.5rem; margin-bottom: 0.8rem; }
 
-        .link-name {
-            font-weight: 600;
-            font-size: 0.97rem;
-            color: #e0e0e0;
-        }
-
-        .link-url {
-            font-size: 0.78rem;
-            color: #8b74ff;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            margin-top: 0.1rem;
-        }
-
-        .link-arrow { color: #444; flex-shrink: 0; }
-
-        /* EMPTY STATE */
-        .empty-state {
-            text-align: center;
-            padding: 4rem 2rem;
-            color: #555;
-        }
-
-        .empty-icon { font-size: 3.5rem; margin-bottom: 0.8rem; }
-
-        /* ADD VIEW */
-        .add-section {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.8rem;
-        }
-
+        /* ── ADD VIEW ── */
+        .add-section { display: grid; grid-template-columns: 1fr 1fr; gap: 1.8rem; }
         @media (max-width: 680px) { .add-section { grid-template-columns: 1fr; } }
 
-        .add-card {
-            background: #1a1a2e;
-            border: 1px solid #2a2a4a;
-            border-radius: 14px;
-            padding: 2rem;
-        }
+        .add-card     { background: #1a1a2e; border: 1px solid #2a2a4a; border-radius: 14px; padding: 2rem; }
+        .add-card h2  { font-size: 1.1rem; color: #8b74ff; margin-bottom: 1.5rem; }
 
-        .add-card h2 {
-            font-size: 1.15rem;
-            color: #8b74ff;
-            margin-bottom: 1.6rem;
-        }
-
-        .form-group { margin-bottom: 1rem; }
-
-        .form-group label {
-            display: block;
-            font-size: 0.82rem;
-            color: #888;
-            margin-bottom: 0.35rem;
-            letter-spacing: 0.3px;
-        }
+        .form-group       { margin-bottom: 1rem; }
+        .form-group label { display: block; font-size: 0.8rem; color: #888; margin-bottom: 0.35rem; }
 
         .form-group input,
         .form-group select {
@@ -236,14 +192,13 @@
             border-radius: 8px;
             padding: 0.65rem 1rem;
             color: #e0e0e0;
-            font-size: 0.93rem;
-            transition: border-color 0.2s;
+            font-size: 0.92rem;
             outline: none;
+            transition: border-color 0.2s;
         }
 
         .form-group input:focus,
         .form-group select:focus { border-color: #8b74ff; }
-
         .form-group select option { background: #1a1a2e; }
 
         .submit-btn {
@@ -253,37 +208,68 @@
             color: white;
             padding: 0.75rem;
             border-radius: 8px;
-            font-size: 0.97rem;
+            font-size: 0.95rem;
             font-weight: 600;
             cursor: pointer;
             margin-top: 0.3rem;
             transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
         }
 
-        .submit-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        .submit-btn:hover    { opacity: 0.9; transform: translateY(-1px); }
+        .submit-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
 
-        .feedback {
-            font-size: 0.82rem;
-            text-align: center;
-            min-height: 1.3rem;
-            margin-top: 0.6rem;
+        .feedback      { font-size: 0.8rem; text-align: center; min-height: 1.2rem; margin-top: 0.6rem; }
+        .feedback.ok   { color: #5abf77; }
+        .feedback.err  { color: #e06060; }
+
+        /* ── TOAST ── */
+        #toast-wrap {
+            position: fixed;
+            bottom: 1.8rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 600;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            pointer-events: none;
         }
 
-        .feedback.ok { color: #5abf77; }
-        .feedback.err { color: #e06060; }
+        .toast {
+            background: #1e1e38;
+            border: 1px solid #2a2a4a;
+            border-radius: 10px;
+            padding: 0.75rem 1.2rem;
+            font-size: 0.88rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            animation: slideUp 0.3s ease;
+            pointer-events: all;
+        }
 
-        /* MODAL */
+        .toast.ok  { border-color: #5abf77; }
+        .toast.err { border-color: #e06060; }
+
+        @keyframes slideUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+
+        /* ── MODALS ── */
         .modal-overlay {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.75);
-            z-index: 200;
+            background: rgba(0,0,0,.78);
+            z-index: 300;
             align-items: center;
             justify-content: center;
+            padding: 1rem;
         }
 
-        .modal-overlay.active { display: flex; }
+        .modal-overlay.open { display: flex; }
 
         .modal {
             background: #1a1a2e;
@@ -291,21 +277,18 @@
             border-radius: 18px;
             padding: 2.2rem;
             width: 100%;
-            max-width: 360px;
-            text-align: center;
+            max-width: 420px;
         }
 
-        .modal-lock { font-size: 2.4rem; margin-bottom: 0.8rem; }
+        .modal-icon { font-size: 2.3rem; text-align: center; margin-bottom: 0.8rem; }
+        .modal h2   { font-size: 1.25rem; text-align: center; margin-bottom: 0.4rem; }
 
-        .modal h2 {
-            font-size: 1.3rem;
-            margin-bottom: 0.4rem;
-        }
-
-        .modal p {
+        .modal-sub  {
             color: #777;
-            font-size: 0.88rem;
-            margin-bottom: 1.5rem;
+            font-size: 0.86rem;
+            text-align: center;
+            margin-bottom: 1.4rem;
+            line-height: 1.5;
         }
 
         .modal-input {
@@ -313,71 +296,108 @@
             background: #0f0f1a;
             border: 1px solid #2a2a4a;
             border-radius: 8px;
-            padding: 0.8rem 1rem;
+            padding: 0.75rem 1rem;
             color: #e0e0e0;
-            font-size: 1.1rem;
-            text-align: center;
-            letter-spacing: 6px;
-            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
             outline: none;
+            margin-bottom: 0.5rem;
         }
 
+        .modal-input.pw { text-align: center; letter-spacing: 6px; font-size: 1.1rem; }
         .modal-input:focus { border-color: #8b74ff; }
 
-        .modal-err {
-            color: #e06060;
-            font-size: 0.82rem;
-            min-height: 1.2rem;
-            margin-bottom: 0.8rem;
-        }
+        .modal-err  { color: #e06060; font-size: 0.8rem; min-height: 1.1rem; margin-bottom: 0.8rem; text-align: center; }
 
         .modal-btns { display: flex; gap: 0.8rem; }
 
-        .modal-cancel {
+        .m-cancel {
             flex: 1;
             background: none;
             border: 1px solid #2a2a4a;
             color: #777;
-            padding: 0.7rem;
+            padding: 0.68rem;
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.2s;
+            font-size: 0.9rem;
         }
 
-        .modal-cancel:hover { border-color: #555; color: #ccc; }
+        .m-cancel:hover { border-color: #555; color: #ccc; }
 
-        .modal-confirm {
-            flex: 1;
+        .m-confirm {
+            flex: 2;
             background: #8b74ff;
             border: none;
             color: white;
-            padding: 0.7rem;
+            padding: 0.68rem;
             border-radius: 8px;
             cursor: pointer;
             font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
             transition: opacity 0.2s;
         }
 
-        .modal-confirm:hover { opacity: 0.85; }
+        .m-confirm:hover     { opacity: 0.85; }
+        .m-confirm:disabled  { opacity: 0.55; cursor: not-allowed; }
 
-        /* RESPONSIVE */
+        /* Info box (PAT instructions) */
+        .info-box {
+            background: #0f0f1a;
+            border: 1px solid #2a2a4a;
+            border-radius: 8px;
+            padding: 0.85rem 1rem;
+            font-size: 0.8rem;
+            color: #888;
+            margin-bottom: 1rem;
+            line-height: 1.65;
+        }
+
+        .info-box strong { color: #bbb; }
+        .info-box a      { color: #8b74ff; text-decoration: none; }
+        .info-box a:hover { text-decoration: underline; }
+
+        /* spinner */
+        .spin {
+            display: inline-block;
+            width: 14px; height: 14px;
+            border: 2px solid rgba(255,255,255,.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: rotate .7s linear infinite;
+        }
+
+        @keyframes rotate { to { transform: rotate(360deg); } }
+
+        /* ── RESPONSIVE ── */
         @media (max-width: 500px) {
             header { padding: 0.8rem 1rem; }
-            main { padding: 1.5rem 1rem; }
-            .logo { font-size: 1.1rem; }
+            main   { padding: 1.5rem 1rem; }
+            .logo  { font-size: 1.1rem; }
         }
     </style>
 </head>
 <body>
 
+<!-- ══ HEADER ══════════════════════════════════════════════════════ -->
 <header>
     <div class="logo">🔗 MisLinks</div>
     <nav>
+        <div class="sync-wrap">
+            <div class="sync-dot" id="sync-dot"></div>
+            <span id="sync-lbl">–</span>
+        </div>
+        <button class="icon-btn" title="Recargar datos" onclick="reload()">↻</button>
+        <button class="icon-btn" title="Configuración del token" onclick="openSettings()">⚙</button>
         <button class="nav-btn active" id="btn-home" onclick="goHome()">Inicio</button>
-        <button class="nav-btn" id="btn-add" onclick="requestAdd()">+ Añadir</button>
+        <button class="nav-btn"        id="btn-add"  onclick="requestAdd()">+ Añadir</button>
     </nav>
 </header>
 
+<!-- ══ MAIN ════════════════════════════════════════════════════════ -->
 <main>
 
     <!-- INICIO -->
@@ -387,7 +407,7 @@
         <div class="categories-grid" id="categories-grid"></div>
     </div>
 
-    <!-- ENLACES DE UNA CATEGORÍA -->
+    <!-- ENLACES -->
     <div class="view" id="view-links">
         <div class="links-header">
             <button class="back-btn" onclick="goHome()">← Volver</button>
@@ -399,10 +419,9 @@
     <!-- AÑADIR -->
     <div class="view" id="view-add">
         <div class="page-title">Añadir</div>
-        <div class="page-subtitle">Crea categorías y añade enlaces</div>
+        <div class="page-subtitle">Crea categorías y añade enlaces — los cambios se guardan en GitHub</div>
         <div class="add-section">
 
-            <!-- Nueva categoría -->
             <div class="add-card">
                 <h2>📁 Nueva Categoría</h2>
                 <div class="form-group">
@@ -413,18 +432,15 @@
                     <label>Emoji (opcional)</label>
                     <input type="text" id="cat-emoji" placeholder="🎨" maxlength="4">
                 </div>
-                <button class="submit-btn" onclick="addCategory()">Crear Categoría</button>
+                <button class="submit-btn" id="btn-cat" onclick="addCategory()">Crear Categoría</button>
                 <div class="feedback" id="cat-msg"></div>
             </div>
 
-            <!-- Nuevo enlace -->
             <div class="add-card">
                 <h2>🔗 Nuevo Enlace</h2>
                 <div class="form-group">
                     <label>Categoría</label>
-                    <select id="link-cat">
-                        <option value="">— Seleccionar —</option>
-                    </select>
+                    <select id="link-cat"><option value="">— Seleccionar —</option></select>
                 </div>
                 <div class="form-group">
                     <label>Nombre</label>
@@ -434,7 +450,7 @@
                     <label>URL</label>
                     <input type="url" id="link-url" placeholder="https://…">
                 </div>
-                <button class="submit-btn" onclick="addLink()">Añadir Enlace</button>
+                <button class="submit-btn" id="btn-link" onclick="addLink()">Añadir Enlace</button>
                 <div class="feedback" id="link-msg"></div>
             </div>
 
@@ -443,188 +459,423 @@
 
 </main>
 
-<!-- MODAL CONTRASEÑA -->
-<div class="modal-overlay" id="modal" onclick="outsideClose(event)">
+<!-- ══ TOASTS ═══════════════════════════════════════════════════════ -->
+<div id="toast-wrap"></div>
+
+<!-- ══ MODAL: CONTRASEÑA ════════════════════════════════════════════ -->
+<div class="modal-overlay" id="mod-pw" onclick="if(event.target===this)closeModal('mod-pw')">
     <div class="modal">
-        <div class="modal-lock">🔒</div>
+        <div class="modal-icon">🔒</div>
         <h2>Acceso protegido</h2>
-        <p>Introduce la contraseña para acceder a la sección Añadir</p>
-        <input class="modal-input" type="password" id="modal-pw"
-               placeholder="••••"
-               onkeydown="if(event.key==='Enter') checkPw()">
-        <div class="modal-err" id="modal-err"></div>
+        <p class="modal-sub">Introduce la contraseña para acceder a la sección Añadir</p>
+        <input class="modal-input pw" type="password" id="pw-inp"
+               placeholder="••••" onkeydown="if(event.key==='Enter')checkPw()">
+        <div class="modal-err" id="pw-err"></div>
         <div class="modal-btns">
-            <button class="modal-cancel" onclick="closeModal()">Cancelar</button>
-            <button class="modal-confirm" onclick="checkPw()">Entrar</button>
+            <button class="m-cancel"  onclick="closeModal('mod-pw')">Cancelar</button>
+            <button class="m-confirm" onclick="checkPw()">Entrar</button>
         </div>
     </div>
 </div>
 
+<!-- ══ MODAL: TOKEN GITHUB ══════════════════════════════════════════ -->
+<div class="modal-overlay" id="mod-pat" onclick="if(event.target===this)closeModal('mod-pat')">
+    <div class="modal">
+        <div class="modal-icon">🔑</div>
+        <h2>Token de GitHub</h2>
+        <p class="modal-sub">Necesario para que los cambios se guarden en el repositorio y sean visibles desde cualquier dispositivo.</p>
+        <div class="info-box">
+            1. Ve a <a href="https://github.com/settings/tokens/new" target="_blank" rel="noopener">github.com/settings/tokens</a><br>
+            2. En <strong>Note</strong> pon un nombre (ej. "MisLinks")<br>
+            3. Selecciona el permiso <strong>repo</strong> (o <strong>public_repo</strong> si el repo es público)<br>
+            4. Haz clic en <strong>Generate token</strong> y pégalo aquí<br>
+            <span style="color:#666;font-size:.75rem">El token se guarda solo en este navegador (localStorage). Nunca se transmite a ningún servidor excepto a la API de GitHub.</span>
+        </div>
+        <input class="modal-input" type="password" id="pat-inp"
+               placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
+               onkeydown="if(event.key==='Enter')savePat()">
+        <div class="modal-err" id="pat-err"></div>
+        <div class="modal-btns">
+            <button class="m-cancel"  onclick="closeModal('mod-pat')">Cancelar</button>
+            <button class="m-confirm" id="pat-btn" onclick="savePat()">Guardar Token</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══ SCRIPT ════════════════════════════════════════════════════════ -->
 <script>
-    const PW = '1234';
-    let auth = false;
+// ── CONFIGURACIÓN ─────────────────────────────────────────────────────
+const OWNER     = 'josefragarionda';
+const REPO      = 'tareate';
+const BRANCH    = 'main';
+const DATA_PATH = 'mislinks/data.json';   // ruta del archivo de datos dentro del repo
+const PW        = '1234';
+// ──────────────────────────────────────────────────────────────────────
 
-    /* ---- DATA ---- */
-    function load() {
-        try { return JSON.parse(localStorage.getItem('mldata')) || { cats: [] }; }
-        catch { return { cats: [] }; }
-    }
+let PAT  = localStorage.getItem('gh_pat') || '';
+let auth = false;
+let data = { cats: [] };  // datos en memoria
+let sha  = null;          // SHA del archivo en GitHub (necesario para actualizar)
 
-    function save(d) {
-        localStorage.setItem('mldata', JSON.stringify(d));
-    }
+/* ──────────────────────────────────────────────────────────────────
+   GITHUB API
+   ────────────────────────────────────────────────────────────────── */
 
-    /* ---- VIEWS ---- */
-    function showView(id) {
-        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-        document.getElementById('view-' + id).classList.add('active');
-        document.getElementById('btn-home').classList.toggle('active', id === 'home');
-        document.getElementById('btn-add').classList.toggle('active', id === 'add');
-    }
+async function ghGet() {
+    const url = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${DATA_PATH}`;
+    const headers = { 'Accept': 'application/vnd.github.v3+json' };
+    if (PAT) headers['Authorization'] = `Bearer ${PAT}`;
+    const res = await fetch(url, { headers });
+    if (res.status === 404) return null;
+    if (!res.ok) throw new Error(`GitHub ${res.status}: ${(await res.json()).message}`);
+    return res.json();
+}
 
-    function goHome() {
-        renderHome();
-        showView('home');
-    }
+async function ghPut(newData) {
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify(newData, null, 2))));
+    const body = { message: 'Update MisLinks data', content, branch: BRANCH };
+    if (sha) body.sha = sha;
 
-    /* ---- HOME ---- */
-    function renderHome() {
-        const d = load();
-        const grid = document.getElementById('categories-grid');
-        if (!d.cats.length) {
-            grid.innerHTML = `
-                <div class="empty-state" style="grid-column:1/-1">
-                    <div class="empty-icon">📭</div>
-                    <p>Aún no hay categorías</p>
-                    <p style="font-size:.85rem;margin-top:.4rem">Pulsa <strong>+ Añadir</strong> para crear la primera</p>
-                </div>`;
-            return;
+    const res = await fetch(
+        `https://api.github.com/repos/${OWNER}/${REPO}/contents/${DATA_PATH}`,
+        {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${PAT}`,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
         }
-        grid.innerHTML = d.cats.map(c => `
-            <div class="category-card" onclick="openCat('${esc(c.id)}')">
-                <div class="category-icon">${c.emoji || '📁'}</div>
-                <div class="category-name">${esc(c.name)}</div>
-                <div class="category-count">${c.links.length} enlace${c.links.length !== 1 ? 's' : ''}</div>
-            </div>`).join('');
+    );
+
+    if (res.status === 409 || res.status === 422) {
+        // Conflicto de SHA → recargar e intentar de nuevo
+        await loadData(false);
+        return ghPut(newData);
     }
 
-    /* ---- CATEGORY LINKS ---- */
-    function openCat(id) {
-        const d = load();
-        const cat = d.cats.find(c => c.id === id);
-        if (!cat) return;
-        document.getElementById('links-title').textContent = (cat.emoji || '📁') + ' ' + cat.name;
-        const list = document.getElementById('links-list');
-        if (!cat.links.length) {
-            list.innerHTML = `
-                <div class="empty-state">
-                    <div class="empty-icon">🔍</div>
-                    <p>Esta categoría no tiene enlaces todavía</p>
-                </div>`;
+    if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || `GitHub ${res.status}`);
+    }
+
+    const result = await res.json();
+    sha = result.content.sha;
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   CARGAR / GUARDAR DATOS
+   ────────────────────────────────────────────────────────────────── */
+
+async function loadData(showToastOnOk = true) {
+    setSyncState('loading', 'Cargando…');
+    try {
+        const file = await ghGet();
+        if (!file) {
+            data = { cats: [] };
+            sha  = null;
         } else {
-            list.innerHTML = cat.links.map(lnk => {
-                let host = '';
-                try { host = new URL(lnk.url).hostname; } catch {}
-                const fav = host ? `<img class="link-favicon" src="https://www.google.com/s2/favicons?domain=${host}&sz=32" onerror="this.style.display='none'" alt="">` : '';
-                return `
-                <a href="${esc(lnk.url)}" class="link-item" target="_blank" rel="noopener noreferrer">
-                    ${fav}
-                    <div class="link-info">
-                        <div class="link-name">${esc(lnk.name)}</div>
-                        <div class="link-url">${esc(lnk.url)}</div>
-                    </div>
-                    <span class="link-arrow">↗</span>
-                </a>`;
-            }).join('');
+            sha  = file.sha;
+            const decoded = decodeURIComponent(escape(atob(file.content.replace(/\n/g, ''))));
+            data = JSON.parse(decoded);
         }
-        showView('links');
+        setSyncState('ok', 'Sincronizado');
+        if (showToastOnOk) toast('Datos cargados', 'ok');
+    } catch (e) {
+        setSyncState('err', 'Error');
+        toast('Error al cargar: ' + e.message, 'err');
     }
+}
 
-    /* ---- ADD VIEW ---- */
-    function openAdd() {
-        const d = load();
-        const sel = document.getElementById('link-cat');
-        sel.innerHTML = '<option value="">— Seleccionar —</option>' +
-            d.cats.map(c => `<option value="${esc(c.id)}">${c.emoji || '📁'} ${esc(c.name)}</option>`).join('');
-        showView('add');
-    }
+async function saveData() {
+    setSyncState('loading', 'Guardando…');
+    await ghPut(data);
+    setSyncState('ok', 'Guardado ✓');
+}
 
-    function addCategory() {
-        const name = document.getElementById('cat-name').value.trim();
-        const emoji = document.getElementById('cat-emoji').value.trim();
-        const msg = document.getElementById('cat-msg');
-        if (!name) { setMsg(msg, 'Introduce un nombre para la categoría', false); return; }
-        const d = load();
-        d.cats.push({ id: 'c' + Date.now(), name, emoji: emoji || '📁', links: [] });
-        save(d);
-        document.getElementById('cat-name').value = '';
-        document.getElementById('cat-emoji').value = '';
-        setMsg(msg, '✓ Categoría creada', true);
-        openAdd(); // refresh select
-    }
+/* ──────────────────────────────────────────────────────────────────
+   VISTAS
+   ────────────────────────────────────────────────────────────────── */
 
-    function addLink() {
-        const catId = document.getElementById('link-cat').value;
-        const name = document.getElementById('link-name').value.trim();
-        const url = document.getElementById('link-url').value.trim();
-        const msg = document.getElementById('link-msg');
-        if (!catId) { setMsg(msg, 'Selecciona una categoría', false); return; }
-        if (!name) { setMsg(msg, 'Introduce un nombre para el enlace', false); return; }
-        if (!url.startsWith('http')) { setMsg(msg, 'Introduce una URL válida (https://…)', false); return; }
-        const d = load();
-        const cat = d.cats.find(c => c.id === catId);
-        if (!cat) return;
-        cat.links.push({ id: 'l' + Date.now(), name, url });
-        save(d);
-        document.getElementById('link-name').value = '';
-        document.getElementById('link-url').value = '';
-        setMsg(msg, '✓ Enlace añadido', true);
-    }
+function showView(id) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-' + id).classList.add('active');
+    document.getElementById('btn-home').classList.toggle('active', id === 'home');
+    document.getElementById('btn-add').classList.toggle('active',  id === 'add');
+}
 
-    function setMsg(el, txt, ok) {
-        el.textContent = txt;
-        el.className = 'feedback ' + (ok ? 'ok' : 'err');
-        setTimeout(() => { el.textContent = ''; el.className = 'feedback'; }, 3000);
-    }
-
-    /* ---- PASSWORD ---- */
-    function requestAdd() {
-        if (auth) { openAdd(); return; }
-        document.getElementById('modal-pw').value = '';
-        document.getElementById('modal-err').textContent = '';
-        document.getElementById('modal').classList.add('active');
-        setTimeout(() => document.getElementById('modal-pw').focus(), 80);
-    }
-
-    function checkPw() {
-        if (document.getElementById('modal-pw').value === PW) {
-            auth = true;
-            closeModal();
-            openAdd();
-        } else {
-            document.getElementById('modal-err').textContent = 'Contraseña incorrecta';
-            document.getElementById('modal-pw').value = '';
-            document.getElementById('modal-pw').focus();
-        }
-    }
-
-    function closeModal() {
-        document.getElementById('modal').classList.remove('active');
-    }
-
-    function outsideClose(e) {
-        if (e.target === document.getElementById('modal')) closeModal();
-    }
-
-    /* ---- UTILS ---- */
-    function esc(s) {
-        return String(s)
-            .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-            .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
-
-    /* ---- INIT ---- */
+function goHome() {
     renderHome();
+    showView('home');
+}
+
+async function reload() {
+    await loadData(true);
+    renderHome();
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   INICIO
+   ────────────────────────────────────────────────────────────────── */
+
+function renderHome() {
+    const grid = document.getElementById('categories-grid');
+    if (!data.cats || !data.cats.length) {
+        grid.innerHTML = `
+            <div class="empty-state" style="grid-column:1/-1">
+                <div class="empty-icon">📭</div>
+                <p>Aún no hay categorías</p>
+                <p style="font-size:.85rem;margin-top:.4rem">
+                    Pulsa <strong>+ Añadir</strong> para crear la primera
+                </p>
+            </div>`;
+        return;
+    }
+    grid.innerHTML = data.cats.map(c => `
+        <div class="category-card" onclick="openCat('${esc(c.id)}')">
+            <div class="category-icon">${c.emoji || '📁'}</div>
+            <div class="category-name">${esc(c.name)}</div>
+            <div class="category-count">${c.links.length} enlace${c.links.length !== 1 ? 's' : ''}</div>
+        </div>`).join('');
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   CATEGORÍA → ENLACES
+   ────────────────────────────────────────────────────────────────── */
+
+function openCat(id) {
+    const cat = data.cats.find(c => c.id === id);
+    if (!cat) return;
+
+    document.getElementById('links-title').textContent = (cat.emoji || '📁') + ' ' + cat.name;
+
+    const list = document.getElementById('links-list');
+    if (!cat.links.length) {
+        list.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">🔍</div>
+                <p>Esta categoría no tiene enlaces todavía</p>
+            </div>`;
+    } else {
+        list.innerHTML = cat.links.map(lnk => {
+            let host = '';
+            try { host = new URL(lnk.url).hostname; } catch {}
+            const fav = host
+                ? `<img class="link-favicon" src="https://www.google.com/s2/favicons?domain=${host}&sz=32" onerror="this.style.display='none'" alt="">`
+                : '';
+            return `
+            <a href="${esc(lnk.url)}" class="link-item" target="_blank" rel="noopener noreferrer">
+                ${fav}
+                <div class="link-info">
+                    <div class="link-name">${esc(lnk.name)}</div>
+                    <div class="link-url">${esc(lnk.url)}</div>
+                </div>
+                <span class="link-arrow">↗</span>
+            </a>`;
+        }).join('');
+    }
+    showView('links');
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   SECCIÓN AÑADIR
+   ────────────────────────────────────────────────────────────────── */
+
+function openAdd() {
+    const sel = document.getElementById('link-cat');
+    sel.innerHTML = '<option value="">— Seleccionar —</option>' +
+        data.cats.map(c =>
+            `<option value="${esc(c.id)}">${c.emoji || '📁'} ${esc(c.name)}</option>`
+        ).join('');
+    showView('add');
+}
+
+async function addCategory() {
+    const name  = document.getElementById('cat-name').value.trim();
+    const emoji = document.getElementById('cat-emoji').value.trim();
+    const msg   = document.getElementById('cat-msg');
+    if (!name) { setFeedback(msg, 'Introduce un nombre para la categoría', false); return; }
+
+    const btn = document.getElementById('btn-cat');
+    setBtnLoading(btn, true, 'Guardando…');
+
+    data.cats.push({ id: 'c' + Date.now(), name, emoji: emoji || '📁', links: [] });
+
+    try {
+        await saveData();
+        document.getElementById('cat-name').value  = '';
+        document.getElementById('cat-emoji').value = '';
+        setFeedback(msg, '✓ Categoría creada y guardada en GitHub', true);
+        openAdd();
+    } catch (e) {
+        data.cats.pop();
+        setFeedback(msg, 'Error: ' + e.message, false);
+        toast('Error al guardar: ' + e.message, 'err');
+        setSyncState('err', 'Error');
+    }
+
+    setBtnLoading(btn, false, 'Crear Categoría');
+}
+
+async function addLink() {
+    const catId = document.getElementById('link-cat').value;
+    const name  = document.getElementById('link-name').value.trim();
+    const url   = document.getElementById('link-url').value.trim();
+    const msg   = document.getElementById('link-msg');
+
+    if (!catId)              { setFeedback(msg, 'Selecciona una categoría', false);              return; }
+    if (!name)               { setFeedback(msg, 'Introduce un nombre para el enlace', false);    return; }
+    if (!url.startsWith('http')) { setFeedback(msg, 'Introduce una URL válida (https://…)', false); return; }
+
+    const btn = document.getElementById('btn-link');
+    setBtnLoading(btn, true, 'Guardando…');
+
+    const cat     = data.cats.find(c => c.id === catId);
+    const newLink = { id: 'l' + Date.now(), name, url };
+    cat.links.push(newLink);
+
+    try {
+        await saveData();
+        document.getElementById('link-name').value = '';
+        document.getElementById('link-url').value  = '';
+        setFeedback(msg, '✓ Enlace añadido y guardado en GitHub', true);
+    } catch (e) {
+        cat.links.pop();
+        setFeedback(msg, 'Error: ' + e.message, false);
+        toast('Error al guardar: ' + e.message, 'err');
+        setSyncState('err', 'Error');
+    }
+
+    setBtnLoading(btn, false, 'Añadir Enlace');
+}
+
+function setFeedback(el, txt, ok) {
+    el.textContent  = txt;
+    el.className    = 'feedback ' + (ok ? 'ok' : 'err');
+    setTimeout(() => { el.textContent = ''; el.className = 'feedback'; }, 4000);
+}
+
+function setBtnLoading(btn, loading, label) {
+    btn.disabled   = loading;
+    btn.innerHTML  = loading ? `<span class="spin"></span> ${label}` : label;
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   MODALES
+   ────────────────────────────────────────────────────────────────── */
+
+function requestAdd() {
+    if (auth) { openAdd(); return; }
+    document.getElementById('pw-inp').value  = '';
+    document.getElementById('pw-err').textContent = '';
+    openModal('mod-pw');
+    setTimeout(() => document.getElementById('pw-inp').focus(), 80);
+}
+
+function checkPw() {
+    if (document.getElementById('pw-inp').value === PW) {
+        auth = true;
+        closeModal('mod-pw');
+        if (!PAT) openPatModal();
+        else      openAdd();
+    } else {
+        document.getElementById('pw-err').textContent = 'Contraseña incorrecta';
+        document.getElementById('pw-inp').value = '';
+        document.getElementById('pw-inp').focus();
+    }
+}
+
+function openPatModal() {
+    document.getElementById('pat-inp').value = '';
+    document.getElementById('pat-err').textContent = '';
+    openModal('mod-pat');
+    setTimeout(() => document.getElementById('pat-inp').focus(), 80);
+}
+
+function openSettings() {
+    document.getElementById('pat-inp').value = PAT ? '(token guardado — pega uno nuevo para cambiarlo)' : '';
+    document.getElementById('pat-err').textContent = '';
+    openModal('mod-pat');
+}
+
+async function savePat() {
+    const token = document.getElementById('pat-inp').value.trim();
+    if (!token || token.startsWith('(token')) {
+        document.getElementById('pat-err').textContent = 'Introduce un token válido';
+        return;
+    }
+
+    const btn = document.getElementById('pat-btn');
+    setBtnLoading(btn, true, 'Verificando…');
+
+    try {
+        // Verificar que el token tiene acceso al repositorio
+        const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}`, {
+            headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.github.v3+json' }
+        });
+        if (!res.ok) throw new Error('Token inválido o sin acceso al repositorio "' + REPO + '"');
+
+        PAT = token;
+        localStorage.setItem('gh_pat', PAT);
+        closeModal('mod-pat');
+        toast('Token guardado correctamente ✓', 'ok');
+
+        // Recargar datos con el nuevo token (por si el repo es privado)
+        await loadData(false);
+        renderHome();
+
+        if (auth) openAdd();
+
+    } catch (e) {
+        document.getElementById('pat-err').textContent = e.message;
+    }
+
+    setBtnLoading(btn, false, 'Guardar Token');
+}
+
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+/* ──────────────────────────────────────────────────────────────────
+   SYNC STATE
+   ────────────────────────────────────────────────────────────────── */
+
+function setSyncState(state, label) {
+    document.getElementById('sync-dot').className = 'sync-dot ' + state;
+    document.getElementById('sync-lbl').textContent = label;
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   TOAST
+   ────────────────────────────────────────────────────────────────── */
+
+function toast(msg, type = 'ok') {
+    const el = document.createElement('div');
+    el.className = `toast ${type}`;
+    el.innerHTML = `<span>${type === 'ok' ? '✓' : '⚠'}</span><span>${msg}</span>`;
+    document.getElementById('toast-wrap').appendChild(el);
+    setTimeout(() => el.remove(), 4500);
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   UTILIDADES
+   ────────────────────────────────────────────────────────────────── */
+
+function esc(s) {
+    return String(s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   INICIO
+   ────────────────────────────────────────────────────────────────── */
+
+(async () => {
+    await loadData(false);
+    renderHome();
+})();
 </script>
 </body>
 </html>
