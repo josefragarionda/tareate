@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MisLinks</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f0f1a;
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+
+        /* HEADER */
+        header {
+            background: #12122a;
+            border-bottom: 1px solid #2a2a4a;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #8b74ff;
+            letter-spacing: 1px;
+        }
+
+        nav { display: flex; gap: 0.8rem; }
+
+        .nav-btn {
+            background: none;
+            border: 1px solid #3a3a5a;
+            color: #aaa;
+            padding: 0.45rem 1.1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:hover { border-color: #8b74ff; color: #8b74ff; }
+        .nav-btn.active { background: #8b74ff; border-color: #8b74ff; color: white; }
+
+        /* MAIN */
+        main {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2.5rem 2rem;
+        }
+
+        .view { display: none; }
+        .view.active { display: block; }
+
+        .page-title {
+            font-size: 1.9rem;
+            font-weight: 700;
+            margin-bottom: 0.4rem;
+        }
+
+        .page-subtitle {
+            color: #777;
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+        }
+
+        /* CATEGORIES GRID */
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.2rem;
+        }
+
+        .category-card {
+            background: #1a1a2e;
+            border: 1px solid #2a2a4a;
+            border-radius: 14px;
+            padding: 1.6rem 1.2rem;
+            cursor: pointer;
+            transition: all 0.25s;
+            text-align: center;
+        }
+
+        .category-card:hover {
+            border-color: #8b74ff;
+            transform: translateY(-4px);
+            box-shadow: 0 10px 28px rgba(139, 116, 255, 0.18);
+        }
+
+        .category-icon { font-size: 2.6rem; margin-bottom: 0.7rem; }
+
+        .category-name {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #e0e0e0;
+        }
+
+        .category-count {
+            font-size: 0.78rem;
+            color: #666;
+            margin-top: 0.3rem;
+        }
+
+        /* LINKS VIEW */
+        .links-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.8rem;
+        }
+
+        .back-btn {
+            background: none;
+            border: 1px solid #2a2a4a;
+            color: #8b74ff;
+            cursor: pointer;
+            font-size: 0.9rem;
+            padding: 0.45rem 0.9rem;
+            border-radius: 8px;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .back-btn:hover { border-color: #8b74ff; background: rgba(139,116,255,0.08); }
+
+        .links-title {
+            font-size: 1.7rem;
+            font-weight: 700;
+        }
+
+        .links-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.7rem;
+        }
+
+        .link-item {
+            background: #1a1a2e;
+            border: 1px solid #2a2a4a;
+            border-radius: 10px;
+            padding: 1rem 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            text-decoration: none;
+            transition: all 0.2s;
+            color: inherit;
+        }
+
+        .link-item:hover {
+            border-color: #8b74ff;
+            background: #1f1f38;
+            transform: translateX(5px);
+        }
+
+        .link-favicon {
+            width: 22px;
+            height: 22px;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        .link-info { flex: 1; min-width: 0; }
+
+        .link-name {
+            font-weight: 600;
+            font-size: 0.97rem;
+            color: #e0e0e0;
+        }
+
+        .link-url {
+            font-size: 0.78rem;
+            color: #8b74ff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-top: 0.1rem;
+        }
+
+        .link-arrow { color: #444; flex-shrink: 0; }
+
+        /* EMPTY STATE */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #555;
+        }
+
+        .empty-icon { font-size: 3.5rem; margin-bottom: 0.8rem; }
+
+        /* ADD VIEW */
+        .add-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.8rem;
+        }
+
+        @media (max-width: 680px) { .add-section { grid-template-columns: 1fr; } }
+
+        .add-card {
+            background: #1a1a2e;
+            border: 1px solid #2a2a4a;
+            border-radius: 14px;
+            padding: 2rem;
+        }
+
+        .add-card h2 {
+            font-size: 1.15rem;
+            color: #8b74ff;
+            margin-bottom: 1.6rem;
+        }
+
+        .form-group { margin-bottom: 1rem; }
+
+        .form-group label {
+            display: block;
+            font-size: 0.82rem;
+            color: #888;
+            margin-bottom: 0.35rem;
+            letter-spacing: 0.3px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            background: #0f0f1a;
+            border: 1px solid #2a2a4a;
+            border-radius: 8px;
+            padding: 0.65rem 1rem;
+            color: #e0e0e0;
+            font-size: 0.93rem;
+            transition: border-color 0.2s;
+            outline: none;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus { border-color: #8b74ff; }
+
+        .form-group select option { background: #1a1a2e; }
+
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #8b74ff, #6a55e0);
+            border: none;
+            color: white;
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-size: 0.97rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 0.3rem;
+            transition: all 0.2s;
+        }
+
+        .submit-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+        .feedback {
+            font-size: 0.82rem;
+            text-align: center;
+            min-height: 1.3rem;
+            margin-top: 0.6rem;
+        }
+
+        .feedback.ok { color: #5abf77; }
+        .feedback.err { color: #e06060; }
+
+        /* MODAL */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.75);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active { display: flex; }
+
+        .modal {
+            background: #1a1a2e;
+            border: 1px solid #2a2a4a;
+            border-radius: 18px;
+            padding: 2.2rem;
+            width: 100%;
+            max-width: 360px;
+            text-align: center;
+        }
+
+        .modal-lock { font-size: 2.4rem; margin-bottom: 0.8rem; }
+
+        .modal h2 {
+            font-size: 1.3rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .modal p {
+            color: #777;
+            font-size: 0.88rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-input {
+            width: 100%;
+            background: #0f0f1a;
+            border: 1px solid #2a2a4a;
+            border-radius: 8px;
+            padding: 0.8rem 1rem;
+            color: #e0e0e0;
+            font-size: 1.1rem;
+            text-align: center;
+            letter-spacing: 6px;
+            margin-bottom: 0.5rem;
+            outline: none;
+        }
+
+        .modal-input:focus { border-color: #8b74ff; }
+
+        .modal-err {
+            color: #e06060;
+            font-size: 0.82rem;
+            min-height: 1.2rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .modal-btns { display: flex; gap: 0.8rem; }
+
+        .modal-cancel {
+            flex: 1;
+            background: none;
+            border: 1px solid #2a2a4a;
+            color: #777;
+            padding: 0.7rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .modal-cancel:hover { border-color: #555; color: #ccc; }
+
+        .modal-confirm {
+            flex: 1;
+            background: #8b74ff;
+            border: none;
+            color: white;
+            padding: 0.7rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: opacity 0.2s;
+        }
+
+        .modal-confirm:hover { opacity: 0.85; }
+
+        /* RESPONSIVE */
+        @media (max-width: 500px) {
+            header { padding: 0.8rem 1rem; }
+            main { padding: 1.5rem 1rem; }
+            .logo { font-size: 1.1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo">🔗 MisLinks</div>
+    <nav>
+        <button class="nav-btn active" id="btn-home" onclick="goHome()">Inicio</button>
+        <button class="nav-btn" id="btn-add" onclick="requestAdd()">+ Añadir</button>
+    </nav>
+</header>
+
+<main>
+
+    <!-- INICIO -->
+    <div class="view active" id="view-home">
+        <div class="page-title">Mis Categorías</div>
+        <div class="page-subtitle">Selecciona una categoría para ver sus enlaces</div>
+        <div class="categories-grid" id="categories-grid"></div>
+    </div>
+
+    <!-- ENLACES DE UNA CATEGORÍA -->
+    <div class="view" id="view-links">
+        <div class="links-header">
+            <button class="back-btn" onclick="goHome()">← Volver</button>
+            <div class="links-title" id="links-title"></div>
+        </div>
+        <div class="links-list" id="links-list"></div>
+    </div>
+
+    <!-- AÑADIR -->
+    <div class="view" id="view-add">
+        <div class="page-title">Añadir</div>
+        <div class="page-subtitle">Crea categorías y añade enlaces</div>
+        <div class="add-section">
+
+            <!-- Nueva categoría -->
+            <div class="add-card">
+                <h2>📁 Nueva Categoría</h2>
+                <div class="form-group">
+                    <label>Nombre</label>
+                    <input type="text" id="cat-name" placeholder="Ej: Diseño, Trabajo, Noticias…">
+                </div>
+                <div class="form-group">
+                    <label>Emoji (opcional)</label>
+                    <input type="text" id="cat-emoji" placeholder="🎨" maxlength="4">
+                </div>
+                <button class="submit-btn" onclick="addCategory()">Crear Categoría</button>
+                <div class="feedback" id="cat-msg"></div>
+            </div>
+
+            <!-- Nuevo enlace -->
+            <div class="add-card">
+                <h2>🔗 Nuevo Enlace</h2>
+                <div class="form-group">
+                    <label>Categoría</label>
+                    <select id="link-cat">
+                        <option value="">— Seleccionar —</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Nombre</label>
+                    <input type="text" id="link-name" placeholder="Ej: Google, Figma, GitHub…">
+                </div>
+                <div class="form-group">
+                    <label>URL</label>
+                    <input type="url" id="link-url" placeholder="https://…">
+                </div>
+                <button class="submit-btn" onclick="addLink()">Añadir Enlace</button>
+                <div class="feedback" id="link-msg"></div>
+            </div>
+
+        </div>
+    </div>
+
+</main>
+
+<!-- MODAL CONTRASEÑA -->
+<div class="modal-overlay" id="modal" onclick="outsideClose(event)">
+    <div class="modal">
+        <div class="modal-lock">🔒</div>
+        <h2>Acceso protegido</h2>
+        <p>Introduce la contraseña para acceder a la sección Añadir</p>
+        <input class="modal-input" type="password" id="modal-pw"
+               placeholder="••••"
+               onkeydown="if(event.key==='Enter') checkPw()">
+        <div class="modal-err" id="modal-err"></div>
+        <div class="modal-btns">
+            <button class="modal-cancel" onclick="closeModal()">Cancelar</button>
+            <button class="modal-confirm" onclick="checkPw()">Entrar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const PW = '1234';
+    let auth = false;
+
+    /* ---- DATA ---- */
+    function load() {
+        try { return JSON.parse(localStorage.getItem('mldata')) || { cats: [] }; }
+        catch { return { cats: [] }; }
+    }
+
+    function save(d) {
+        localStorage.setItem('mldata', JSON.stringify(d));
+    }
+
+    /* ---- VIEWS ---- */
+    function showView(id) {
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.getElementById('view-' + id).classList.add('active');
+        document.getElementById('btn-home').classList.toggle('active', id === 'home');
+        document.getElementById('btn-add').classList.toggle('active', id === 'add');
+    }
+
+    function goHome() {
+        renderHome();
+        showView('home');
+    }
+
+    /* ---- HOME ---- */
+    function renderHome() {
+        const d = load();
+        const grid = document.getElementById('categories-grid');
+        if (!d.cats.length) {
+            grid.innerHTML = `
+                <div class="empty-state" style="grid-column:1/-1">
+                    <div class="empty-icon">📭</div>
+                    <p>Aún no hay categorías</p>
+                    <p style="font-size:.85rem;margin-top:.4rem">Pulsa <strong>+ Añadir</strong> para crear la primera</p>
+                </div>`;
+            return;
+        }
+        grid.innerHTML = d.cats.map(c => `
+            <div class="category-card" onclick="openCat('${esc(c.id)}')">
+                <div class="category-icon">${c.emoji || '📁'}</div>
+                <div class="category-name">${esc(c.name)}</div>
+                <div class="category-count">${c.links.length} enlace${c.links.length !== 1 ? 's' : ''}</div>
+            </div>`).join('');
+    }
+
+    /* ---- CATEGORY LINKS ---- */
+    function openCat(id) {
+        const d = load();
+        const cat = d.cats.find(c => c.id === id);
+        if (!cat) return;
+        document.getElementById('links-title').textContent = (cat.emoji || '📁') + ' ' + cat.name;
+        const list = document.getElementById('links-list');
+        if (!cat.links.length) {
+            list.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">🔍</div>
+                    <p>Esta categoría no tiene enlaces todavía</p>
+                </div>`;
+        } else {
+            list.innerHTML = cat.links.map(lnk => {
+                let host = '';
+                try { host = new URL(lnk.url).hostname; } catch {}
+                const fav = host ? `<img class="link-favicon" src="https://www.google.com/s2/favicons?domain=${host}&sz=32" onerror="this.style.display='none'" alt="">` : '';
+                return `
+                <a href="${esc(lnk.url)}" class="link-item" target="_blank" rel="noopener noreferrer">
+                    ${fav}
+                    <div class="link-info">
+                        <div class="link-name">${esc(lnk.name)}</div>
+                        <div class="link-url">${esc(lnk.url)}</div>
+                    </div>
+                    <span class="link-arrow">↗</span>
+                </a>`;
+            }).join('');
+        }
+        showView('links');
+    }
+
+    /* ---- ADD VIEW ---- */
+    function openAdd() {
+        const d = load();
+        const sel = document.getElementById('link-cat');
+        sel.innerHTML = '<option value="">— Seleccionar —</option>' +
+            d.cats.map(c => `<option value="${esc(c.id)}">${c.emoji || '📁'} ${esc(c.name)}</option>`).join('');
+        showView('add');
+    }
+
+    function addCategory() {
+        const name = document.getElementById('cat-name').value.trim();
+        const emoji = document.getElementById('cat-emoji').value.trim();
+        const msg = document.getElementById('cat-msg');
+        if (!name) { setMsg(msg, 'Introduce un nombre para la categoría', false); return; }
+        const d = load();
+        d.cats.push({ id: 'c' + Date.now(), name, emoji: emoji || '📁', links: [] });
+        save(d);
+        document.getElementById('cat-name').value = '';
+        document.getElementById('cat-emoji').value = '';
+        setMsg(msg, '✓ Categoría creada', true);
+        openAdd(); // refresh select
+    }
+
+    function addLink() {
+        const catId = document.getElementById('link-cat').value;
+        const name = document.getElementById('link-name').value.trim();
+        const url = document.getElementById('link-url').value.trim();
+        const msg = document.getElementById('link-msg');
+        if (!catId) { setMsg(msg, 'Selecciona una categoría', false); return; }
+        if (!name) { setMsg(msg, 'Introduce un nombre para el enlace', false); return; }
+        if (!url.startsWith('http')) { setMsg(msg, 'Introduce una URL válida (https://…)', false); return; }
+        const d = load();
+        const cat = d.cats.find(c => c.id === catId);
+        if (!cat) return;
+        cat.links.push({ id: 'l' + Date.now(), name, url });
+        save(d);
+        document.getElementById('link-name').value = '';
+        document.getElementById('link-url').value = '';
+        setMsg(msg, '✓ Enlace añadido', true);
+    }
+
+    function setMsg(el, txt, ok) {
+        el.textContent = txt;
+        el.className = 'feedback ' + (ok ? 'ok' : 'err');
+        setTimeout(() => { el.textContent = ''; el.className = 'feedback'; }, 3000);
+    }
+
+    /* ---- PASSWORD ---- */
+    function requestAdd() {
+        if (auth) { openAdd(); return; }
+        document.getElementById('modal-pw').value = '';
+        document.getElementById('modal-err').textContent = '';
+        document.getElementById('modal').classList.add('active');
+        setTimeout(() => document.getElementById('modal-pw').focus(), 80);
+    }
+
+    function checkPw() {
+        if (document.getElementById('modal-pw').value === PW) {
+            auth = true;
+            closeModal();
+            openAdd();
+        } else {
+            document.getElementById('modal-err').textContent = 'Contraseña incorrecta';
+            document.getElementById('modal-pw').value = '';
+            document.getElementById('modal-pw').focus();
+        }
+    }
+
+    function closeModal() {
+        document.getElementById('modal').classList.remove('active');
+    }
+
+    function outsideClose(e) {
+        if (e.target === document.getElementById('modal')) closeModal();
+    }
+
+    /* ---- UTILS ---- */
+    function esc(s) {
+        return String(s)
+            .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+            .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    /* ---- INIT ---- */
+    renderHome();
+</script>
+</body>
+</html>
