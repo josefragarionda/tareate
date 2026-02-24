@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="gl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Músculos en Galego</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #ffe5e5 0%, #ffd4b8 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #d32f2f;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .contador {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .contador-item {
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .aciertos {
+            background: #c8e6c9;
+            color: #2e7d32;
+        }
+
+        .fallos {
+            background: #ffcdd2;
+            color: #c62828;
+        }
+
+        .mensaje {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px 40px;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            display: none;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .mensaje.success {
+            background: #c8e6c9;
+            color: #2e7d32;
+        }
+
+        .mensaje.error {
+            background: #ffcdd2;
+            color: #c62828;
+        }
+
+        .contenido {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .panel-izquierdo {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 15px;
+        }
+
+        .lista-musculos {
+            list-style: none;
+        }
+
+        .lista-musculos li {
+            background: white;
+            margin-bottom: 10px;
+            padding: 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            border: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .lista-musculos li:hover:not(.respondido) {
+            background: #e3f2fd;
+            transform: scale(1.02);
+        }
+
+        .lista-musculos li.seleccionado {
+            background: #2196f3;
+            color: white;
+            border-color: #1976d2;
+            transform: scale(1.05);
+        }
+
+        .lista-musculos li.respondido {
+            background: #c8e6c9;
+            color: #2e7d32;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .panel-derecho {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 15px;
+        }
+
+        .contenedor-imagen {
+            display: flex;
+            gap: 20px;
+        }
+
+        .imagen-musculos {
+            flex: 1;
+        }
+
+        .imagen-musculos img {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+        }
+
+        .lista-numeros {
+            width: 80px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .numero-boton {
+            background: white;
+            border: 3px solid #bdbdbd;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.5em;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .numero-boton:hover:not(.verde):not(.rojo) {
+            background: #fff9c4;
+            border-color: #fbc02d;
+            transform: scale(1.1);
+        }
+
+        .numero-boton.verde {
+            background: #4caf50;
+            color: white;
+            border-color: #388e3c;
+            cursor: not-allowed;
+        }
+
+        .numero-boton.rojo {
+            background: #f44336;
+            color: white;
+            border-color: #c62828;
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .info-seleccion {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            text-align: center;
+            font-weight: bold;
+            color: #1565c0;
+            display: none;
+        }
+
+        .fin-juego {
+            text-align: center;
+            display: none;
+            margin-top: 30px;
+        }
+
+        .fin-juego .resultado {
+            background: linear-gradient(135deg, #ffd54f 0%, #ff9800 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .fin-juego h2 {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+
+        .boton-reiniciar {
+            background: linear-gradient(135deg, #ef5350 0%, #ec407a 100%);
+            color: white;
+            border: none;
+            padding: 20px 50px;
+            font-size: 1.5em;
+            font-weight: bold;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: transform 0.3s;
+            margin: 10px;
+        }
+
+        .boton-reiniciar:hover {
+            transform: scale(1.1);
+        }
+
+        /* Estilos para Fase 2 */
+        .campo-con-boton {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+
+        .campo-texto {
+            flex: 1;
+            padding: 15px;
+            border: 3px solid #bdbdbd;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: all 0.3s;
+        }
+
+        .campo-texto:focus {
+            outline: none;
+            border-color: #2196f3;
+            background: #e3f2fd;
+        }
+
+        .campo-texto.correcto {
+            background: #c8e6c9;
+            border-color: #388e3c;
+            color: #2e7d32;
+        }
+
+        .campo-texto.incorrecto {
+            background: #ffcdd2;
+            border-color: #c62828;
+            animation: shake 0.5s;
+        }
+
+        .boton-verificar-campo {
+            background: #4caf50;
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            font-size: 1em;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .boton-verificar-campo:hover {
+            background: #45a049;
+            transform: scale(1.05);
+        }
+
+        .boton-verificar-campo:disabled {
+            background: #9e9e9e;
+            cursor: not-allowed;
+            transform: scale(1);
+        }
+
+        .boton-verificar {
+            background: #2196f3;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .boton-verificar:hover {
+            background: #1976d2;
+            transform: scale(1.02);
+        }
+
+        .boton-volver {
+            background: #757575;
+            color: white;
+            border: none;
+            padding: 10px 30px;
+            font-size: 1em;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 20px;
+        }
+
+        .boton-volver:hover {
+            background: #616161;
+        }
+
+        @media (max-width: 1024px) {
+            .contenido {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- Pantalla de selección de fase -->
+        <div id="seleccion-fase" class="container" style="text-align: center;">
+            <h1 style="margin-bottom: 40px;">💪 Músculos en Galego</h1>
+            <h2 style="font-size: 2em; margin-bottom: 30px; color: #666;">Escolle a fase:</h2>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; max-width: 800px; margin: 0 auto;">
+                <button onclick="iniciarFase(1)" style="background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%); color: white; border: none; padding: 50px 30px; font-size: 1.8em; font-weight: bold; border-radius: 20px; cursor: pointer; box-shadow: 0 10px 30px rgba(0,0,0,0.2); transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                    📋 FASE 1<br>
+                    <span style="font-size: 0.5em; font-weight: normal;">Seleccionar da lista</span>
+                </button>
+                
+                <button id="boton-fase2" onclick="iniciarFase(2)" style="background: linear-gradient(135deg, #9e9e9e 0%, #bdbdbd 100%); color: white; border: none; padding: 50px 30px; font-size: 1.8em; font-weight: bold; border-radius: 20px; cursor: not-allowed; box-shadow: 0 10px 30px rgba(0,0,0,0.2);" disabled>
+                    ✏️ FASE 2<br>
+                    <span style="font-size: 0.5em; font-weight: normal;">Escribir o nome</span><br>
+                    <span style="font-size: 0.4em;">🔒 Bloqueada</span>
+                </button>
+            </div>
+            
+            <p style="margin-top: 40px; color: #999; font-size: 0.9em;">
+                💡 Completa a Fase 1 sen fallos para desbloquear a Fase 2!
+            </p>
+        </div>
+
+        <!-- FASE 1 -->
+        <div id="fase1-container" class="container" style="display: none;">
+            <button class="boton-volver" onclick="volverMenu()">← Volver ao menú</button>
+            
+            <h1>💪 Músculos en Galego - FASE 1</h1>
+
+            <div class="contador">
+                <div class="contador-item aciertos">
+                    ✓ Aciertos: <span id="aciertos">0</span>
+                </div>
+                <div class="contador-item fallos">
+                    ✗ Fallos: <span id="fallos">0</span>
+                </div>
+            </div>
+
+            <div class="mensaje" id="mensaje"></div>
+
+            <div class="contenido">
+                <div class="panel-izquierdo">
+                    <h3 style="margin-bottom: 15px; font-size: 1.3em;">Selecciona o músculo:</h3>
+                    <ul class="lista-musculos" id="lista-musculos"></ul>
+                    <div class="info-seleccion" id="info-seleccion">
+                        Seleccionaches: <span id="musculo-seleccionado"></span><br>
+                        <small>Agora fai clic no número correspondente!</small>
+                    </div>
+                </div>
+
+                <div class="panel-derecho">
+                    <div class="contenedor-imagen">
+                        <div class="imagen-musculos">
+                            <img src="fotos/MUSCULOS.png" alt="Músculos del cuerpo humano">
+                        </div>
+                        <div class="lista-numeros" id="lista-numeros"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="fin-juego" id="fin-juego">
+                <div class="resultado">
+                    <h2>🏆 Fase 1 Completada!</h2>
+                    <p style="font-size: 2em;" id="resultado-final"></p>
+                    <p style="font-size: 1.3em; margin-top: 10px;" id="porcentaje-exito"></p>
+                </div>
+                <button class="boton-reiniciar" onclick="reiniciar()">🔄 Repetir Fase 1</button>
+                <button class="boton-reiniciar" id="boton-pasar-fase2" onclick="pasarFase2()" style="background: linear-gradient(135deg, #2196f3 0%, #42a5f5 100%); display: none;">
+                    ✨ Pasar a Fase 2
+                </button>
+            </div>
+        </div>
+
+        <!-- FASE 2 -->
+        <div id="fase2-container" class="container" style="display: none;">
+            <button class="boton-volver" onclick="volverMenu()">← Volver ao menú</button>
+            
+            <h1>✏️ Músculos en Galego - FASE 2</h1>
+
+            <div class="contador">
+                <div class="contador-item aciertos">
+                    ✓ Aciertos: <span id="aciertos2">0</span>
+                </div>
+                <div class="contador-item fallos">
+                    ✗ Fallos: <span id="fallos2">0</span>
+                </div>
+            </div>
+
+            <div class="mensaje" id="mensaje2"></div>
+
+            <div class="contenido">
+                <div class="panel-izquierdo">
+                    <h3 style="margin-bottom: 15px; font-size: 1.3em;">Escribe o nome dos músculos:</h3>
+                    <div id="campos-texto"></div>
+                    <button class="boton-verificar" onclick="verificarFase2()">✓ Verificar</button>
+                </div>
+
+                <div class="panel-derecho">
+                    <div class="imagen-musculos">
+                        <img src="fotos/MUSCULOS.png" alt="Músculos del cuerpo humano">
+                    </div>
+                </div>
+            </div>
+
+            <div class="fin-juego" id="fin-juego2">
+                <div class="resultado">
+                    <h2>🏆 Fase 2 Completada!</h2>
+                    <p style="font-size: 2em;" id="resultado-final2"></p>
+                    <p style="font-size: 1.3em; margin-top: 10px;" id="porcentaje-exito2"></p>
+                </div>
+                <button class="boton-reiniciar" onclick="reiniciarFase2()">🔄 Repetir Fase 2</button>
+                <button class="boton-reiniciar" onclick="volverMenu()">🏠 Volver ao menú</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Definición de músculos con sus números correspondientes
+        const musculos = [
+            { id: 1, nome: 'MASETER', numero: 1 },
+            { id: 2, nome: 'PEITORAL', numero: 2 },
+            { id: 3, nome: 'BÍCEPS', numero: 3 },
+            { id: 4, nome: 'ABDOMINAIS', numero: 4 },
+            { id: 5, nome: 'CUÁDRICEPS', numero: 5 },
+            { id: 6, nome: 'TIBIAL', numero: 6 },
+            { id: 7, nome: 'TRAPECIO', numero: 7 },
+            { id: 8, nome: 'TRÍCEPS', numero: 8 },
+            { id: 9, nome: 'GLÚTEO', numero: 9 },
+            { id: 10, nome: 'FEMORAL', numero: 10 },
+            { id: 11, nome: 'XEMELGO', numero: 11 }
+        ];
+
+        // Estado del juego Fase 1
+        let musculoSeleccionado = null;
+        let respondidas = [];
+        let aciertos = 0;
+        let fallos = 0;
+        let juegoTerminado = false;
+        let fase2Desbloqueada = false;
+
+        // Estado del juego Fase 2
+        let aciertos2 = 0;
+        let fallos2 = 0;
+        let numerosPosiciones = [];
+
+        // ============ FUNCIONES GENERALES ============
+        
+        function volverMenu() {
+            document.getElementById('fase1-container').style.display = 'none';
+            document.getElementById('fase2-container').style.display = 'none';
+            document.getElementById('seleccion-fase').style.display = 'block';
+        }
+
+        function iniciarFase(fase) {
+            document.getElementById('seleccion-fase').style.display = 'none';
+            
+            if (fase === 1) {
+                document.getElementById('fase1-container').style.display = 'block';
+                inicializarFase1();
+            } else if (fase === 2 && fase2Desbloqueada) {
+                document.getElementById('fase2-container').style.display = 'block';
+                inicializarFase2();
+            }
+        }
+
+        function desbloquearFase2() {
+            fase2Desbloqueada = true;
+            const boton = document.getElementById('boton-fase2');
+            boton.disabled = false;
+            boton.style.background = 'linear-gradient(135deg, #2196f3 0%, #42a5f5 100%)';
+            boton.style.cursor = 'pointer';
+            boton.innerHTML = '✏️ FASE 2<br><span style="font-size: 0.5em; font-weight: normal;">Escribir o nome</span><br><span style="font-size: 0.4em;">✅ Desbloqueada!</span>';
+            boton.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
+            boton.onmouseout = function() { this.style.transform = 'scale(1)'; };
+        }
+
+        // ============ FASE 1 ============
+
+        function inicializarFase1() {
+            generarListaMusculos();
+            generarListaNumeros();
+        }
+
+        function generarListaMusculos() {
+            const lista = document.getElementById('lista-musculos');
+            lista.innerHTML = '';
+            
+            const musculosAleatorios = [...musculos];
+            musculosAleatorios.sort(() => Math.random() - 0.5);
+            
+            musculosAleatorios.forEach(musculo => {
+                const li = document.createElement('li');
+                li.id = `musculo-${musculo.id}`;
+                li.textContent = musculo.nome;
+                li.onclick = () => seleccionarMusculoDeLista(musculo);
+                lista.appendChild(li);
+            });
+        }
+
+        function generarListaNumeros() {
+            const lista = document.getElementById('lista-numeros');
+            lista.innerHTML = '';
+            
+            const numeros = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+            numeros.sort(() => Math.random() - 0.5);
+            
+            numeros.forEach(numero => {
+                const boton = document.createElement('div');
+                boton.id = `numero-${numero}`;
+                boton.className = 'numero-boton';
+                boton.textContent = numero;
+                boton.onclick = () => verificarRespuesta(numero);
+                lista.appendChild(boton);
+            });
+        }
+
+        function seleccionarMusculoDeLista(musculo) {
+            if (respondidas.includes(musculo.id) || juegoTerminado) return;
+            
+            musculoSeleccionado = musculo;
+            
+            musculos.forEach(m => {
+                const li = document.getElementById(`musculo-${m.id}`);
+                li.className = '';
+                
+                if (respondidas.includes(m.id)) {
+                    li.className = 'respondido';
+                } else if (m.id === musculo.id) {
+                    li.className = 'seleccionado';
+                }
+            });
+            
+            document.getElementById('info-seleccion').style.display = 'block';
+            document.getElementById('musculo-seleccionado').textContent = musculo.nome;
+        }
+
+        function verificarRespuesta(numeroSeleccionado) {
+            if (!musculoSeleccionado || juegoTerminado) return;
+            
+            const numeroBoton = document.getElementById(`numero-${numeroSeleccionado}`);
+            const esCorrecta = musculoSeleccionado.numero === numeroSeleccionado;
+            
+            if (esCorrecta) {
+                aciertos++;
+                document.getElementById('aciertos').textContent = aciertos;
+                respondidas.push(musculoSeleccionado.id);
+                mostrarMensaje('✅ Correcto!', 'success', 'mensaje');
+                
+                numeroBoton.className = 'numero-boton verde';
+                
+                const li = document.getElementById(`musculo-${musculoSeleccionado.id}`);
+                li.className = 'respondido';
+                
+                musculoSeleccionado = null;
+                document.getElementById('info-seleccion').style.display = 'none';
+                
+                setTimeout(() => {
+                    ocultarMensaje('mensaje');
+                    if (respondidas.length >= musculos.length) {
+                        finalizarJuego();
+                    }
+                }, 1500);
+            } else {
+                fallos++;
+                document.getElementById('fallos').textContent = fallos;
+                mostrarMensaje('❌ Incorrecto! Proba outra vez', 'error', 'mensaje');
+                
+                numeroBoton.className = 'numero-boton rojo';
+                
+                setTimeout(() => {
+                    if (!numeroBoton.classList.contains('verde')) {
+                        numeroBoton.className = 'numero-boton';
+                    }
+                    ocultarMensaje('mensaje');
+                }, 2000);
+            }
+        }
+
+        function mostrarMensaje(texto, tipo, idMensaje) {
+            const mensaje = document.getElementById(idMensaje);
+            mensaje.textContent = texto;
+            mensaje.className = 'mensaje ' + tipo;
+            mensaje.style.display = 'block';
+        }
+
+        function ocultarMensaje(idMensaje) {
+            document.getElementById(idMensaje).style.display = 'none';
+        }
+
+        function finalizarJuego() {
+            juegoTerminado = true;
+            document.getElementById('fin-juego').style.display = 'block';
+            
+            const total = aciertos + fallos;
+            const porcentaje = total > 0 ? Math.round((aciertos / total) * 100) : 0;
+            
+            document.getElementById('resultado-final').textContent = `Aciertos: ${aciertos} | Fallos: ${fallos}`;
+            document.getElementById('porcentaje-exito').textContent = `Porcentaxe de éxito: ${porcentaje}%`;
+            
+            // Si completó sin fallos, desbloquear Fase 2
+            if (fallos === 0) {
+                desbloquearFase2();
+                document.getElementById('boton-pasar-fase2').style.display = 'inline-block';
+            }
+        }
+
+        function reiniciar() {
+            musculoSeleccionado = null;
+            respondidas = [];
+            aciertos = 0;
+            fallos = 0;
+            juegoTerminado = false;
+            
+            document.getElementById('aciertos').textContent = '0';
+            document.getElementById('fallos').textContent = '0';
+            document.getElementById('fin-juego').style.display = 'none';
+            document.getElementById('info-seleccion').style.display = 'none';
+            
+            generarListaMusculos();
+            generarListaNumeros();
+        }
+
+        function pasarFase2() {
+            document.getElementById('fase1-container').style.display = 'none';
+            document.getElementById('fase2-container').style.display = 'block';
+            inicializarFase2();
+        }
+
+        // ============ FASE 2 ============
+
+        function inicializarFase2() {
+            aciertos2 = 0;
+            fallos2 = 0;
+            // Mantener orden fijo: no aleatorizar
+            numerosPosiciones = [...musculos];
+            
+            document.getElementById('aciertos2').textContent = '0';
+            document.getElementById('fallos2').textContent = '0';
+            document.getElementById('fin-juego2').style.display = 'none';
+            
+            generarCamposTexto();
+        }
+
+        function generarCamposTexto() {
+            const container = document.getElementById('campos-texto');
+            container.innerHTML = '';
+            
+            for (let i = 1; i <= 11; i++) {
+                const div = document.createElement('div');
+                div.className = 'campo-con-boton';
+                
+                // Añadir label con el número
+                const label = document.createElement('span');
+                label.textContent = `${i}. `;
+                label.style.fontWeight = 'bold';
+                label.style.fontSize = '1.2em';
+                label.style.marginRight = '5px';
+                label.style.minWidth = '30px';
+                
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.className = 'campo-texto';
+                input.id = `campo-${i}`;
+                input.placeholder = `Músculo ${i}`;
+                input.maxLength = 20;
+                
+                const boton = document.createElement('button');
+                boton.className = 'boton-verificar-campo';
+                boton.textContent = '✓';
+                boton.id = `boton-${i}`;
+                boton.onclick = () => verificarCampoIndividual(i);
+                
+                div.appendChild(label);
+                div.appendChild(input);
+                div.appendChild(boton);
+                container.appendChild(div);
+            }
+        }
+
+        function verificarCampoIndividual(numero) {
+            const campo = document.getElementById(`campo-${numero}`);
+            const boton = document.getElementById(`boton-${numero}`);
+            const valorNormalizado = normalizar(campo.value);
+            const musculoEsperado = numerosPosiciones[numero - 1];
+            const nombreEsperado = normalizar(musculoEsperado.nome);
+            
+            if (valorNormalizado === '') {
+                mostrarMensaje('⚠️ Escribe un nome primeiro!', 'error', 'mensaje2');
+                setTimeout(() => ocultarMensaje('mensaje2'), 1500);
+                return;
+            }
+            
+            if (valorNormalizado === nombreEsperado) {
+                campo.className = 'campo-texto correcto';
+                campo.disabled = true;
+                boton.disabled = true;
+                aciertos2++;
+                document.getElementById('aciertos2').textContent = aciertos2;
+                mostrarMensaje('✅ Correcto!', 'success', 'mensaje2');
+                setTimeout(() => ocultarMensaje('mensaje2'), 1000);
+                
+                // Verificar si todos están correctos
+                let todosCorrectos = true;
+                for (let i = 1; i <= 11; i++) {
+                    const c = document.getElementById(`campo-${i}`);
+                    if (!c.disabled) {
+                        todosCorrectos = false;
+                        break;
+                    }
+                }
+                
+                if (todosCorrectos) {
+                    setTimeout(() => finalizarFase2(), 1000);
+                }
+            } else {
+                campo.className = 'campo-texto incorrecto';
+                fallos2++;
+                document.getElementById('fallos2').textContent = fallos2;
+                mostrarMensaje('❌ Incorrecto! Proba outra vez', 'error', 'mensaje2');
+                setTimeout(() => {
+                    if (!campo.disabled) {
+                        campo.className = 'campo-texto';
+                    }
+                    ocultarMensaje('mensaje2');
+                }, 1500);
+            }
+        }
+
+        function normalizar(texto) {
+            return texto.toUpperCase()
+                .replace(/Á/g, 'A')
+                .replace(/É/g, 'E')
+                .replace(/Í/g, 'I')
+                .replace(/Ó/g, 'O')
+                .replace(/Ú/g, 'U')
+                .trim();
+        }
+
+        function verificarFase2() {
+            let todosCorrectos = true;
+            let nuevosAciertos = 0;
+            let nuevosFallos = 0;
+            
+            for (let i = 1; i <= 11; i++) {
+                const campo = document.getElementById(`campo-${i}`);
+                const valorNormalizado = normalizar(campo.value);
+                const musculoEsperado = numerosPosiciones[i - 1];
+                const nombreEsperado = normalizar(musculoEsperado.nome);
+                
+                if (valorNormalizado === nombreEsperado) {
+                    campo.className = 'campo-texto correcto';
+                    campo.disabled = true;
+                    nuevosAciertos++;
+                } else if (valorNormalizado !== '') {
+                    campo.className = 'campo-texto incorrecto';
+                    todosCorrectos = false;
+                    nuevosFallos++;
+                    setTimeout(() => {
+                        if (!campo.disabled) {
+                            campo.className = 'campo-texto';
+                        }
+                    }, 2000);
+                } else {
+                    todosCorrectos = false;
+                }
+            }
+            
+            aciertos2 = nuevosAciertos;
+            fallos2 = nuevosFallos;
+            document.getElementById('aciertos2').textContent = aciertos2;
+            document.getElementById('fallos2').textContent = fallos2;
+            
+            if (todosCorrectos && aciertos2 === 11) {
+                setTimeout(() => {
+                    finalizarFase2();
+                }, 1000);
+            } else if (nuevosAciertos > 0) {
+                mostrarMensaje(`✅ ${nuevosAciertos} correctos!`, 'success', 'mensaje2');
+                setTimeout(() => ocultarMensaje('mensaje2'), 2000);
+            } else {
+                mostrarMensaje('❌ Revisa as respostas', 'error', 'mensaje2');
+                setTimeout(() => ocultarMensaje('mensaje2'), 2000);
+            }
+        }
+
+        function finalizarFase2() {
+            document.getElementById('fin-juego2').style.display = 'block';
+            
+            const total = aciertos2 + fallos2;
+            const porcentaje = total > 0 ? Math.round((aciertos2 / total) * 100) : 0;
+            
+            document.getElementById('resultado-final2').textContent = `Aciertos: ${aciertos2} | Fallos: ${fallos2}`;
+            document.getElementById('porcentaje-exito2').textContent = `Porcentaxe de éxito: ${porcentaje}%`;
+        }
+
+        function reiniciarFase2() {
+            inicializarFase2();
+        }
+
+        // Iniciar aplicación mostrando menú
+        window.onload = function() {
+            document.getElementById('seleccion-fase').style.display = 'block';
+        };
+    </script>
+</body>
+</html>
