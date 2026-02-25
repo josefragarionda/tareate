@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FlashCards SR</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>FlashCards SR</h1>
+    <nav>
+      <a href="#decks" class="nav-link active">Mazos</a>
+      <a href="#study" class="nav-link">Estudiar</a>
+      <a href="#ranking" class="nav-link">Clasificación</a>
+      <a href="#summary" class="nav-link">Resumen</a>
+      <a href="#config" class="nav-link">⚙</a>
+    </nav>
+  </header>
+  <main>
+    <section id="view-decks" class="view"></section>
+    <section id="view-deck-edit" class="view hidden"></section>
+    <section id="view-study" class="view hidden"></section>
+    <section id="view-ranking" class="view hidden"></section>
+    <section id="view-summary" class="view hidden"></section>
+    <section id="view-config" class="view hidden"></section>
+  </main>
+  <!-- Modal genérico -->
+  <div id="modal-overlay" class="hidden">
+    <div id="modal-box">
+      <button id="modal-close" class="btn-icon">&times;</button>
+      <div id="modal-content"></div>
+    </div>
+  </div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

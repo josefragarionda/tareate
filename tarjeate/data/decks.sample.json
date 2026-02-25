@@ -1,0 +1,28 @@
+{
+  "decks": [
+    {
+      "id": "sample-deck-001",
+      "name": "Capitales de Europa",
+      "description": "Mazo de ejemplo: capitales europeas",
+      "passwordHash": "",
+      "passwordSalt": "",
+      "cards": [
+        {"id":"c001","question":"¿Capital de Francia?","answer":"París","level":1,"mastered":false,"stats":{"hits":0,"misses":0}},
+        {"id":"c002","question":"¿Capital de Alemania?","answer":"Berlín","level":1,"mastered":false,"stats":{"hits":0,"misses":0}},
+        {"id":"c003","question":"¿Capital de Italia?","answer":"Roma","level":1,"mastered":false,"stats":{"hits":0,"misses":0}},
+        {"id":"c004","question":"¿Capital de Portugal?","answer":"Lisboa","level":1,"mastered":false,"stats":{"hits":0,"misses":0}},
+        {"id":"c005","question":"¿Capital de Polonia?","answer":"Varsovia","level":1,"mastered":false,"stats":{"hits":0,"misses":0}},
+        {"id":"c006","question":"¿Capital de Suecia?","answer":"Estocolmo","level":1,"mastered":false,"stats":{"hits":0,"misses":0}},
+        {"id":"c007","question":"¿Capital de Países Bajos?","answer":"Ámsterdam","level":1,"mastered":false,"stats":{"hits":0,"misses":0}},
+        {"id":"c008","question":"¿Capital de Grecia?","answer":"Atenas","level":1,"mastered":false,"stats":{"hits":0,"misses":0}}
+      ]
+    }
+  ],
+  "games": [],
+  "config": {
+    "githubRepo": "",
+    "githubBranch": "main",
+    "dataPath": "data/app-data.json",
+    "syncMode": "local"
+  }
+}
