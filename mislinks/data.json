@@ -21,7 +21,13 @@
       "id": "c1772020529142",
       "name": "SISTEMAS DE ESTUDIO",
       "emoji": "⚙️",
-      "links": []
+      "links": [
+        {
+          "id": "l1772020582342",
+          "name": "TARJETAS DE ESTUDIO",
+          "url": "https://josefragarionda.github.io/tareate/tarjeate/"
+        }
+      ]
     }
   ]
 }
