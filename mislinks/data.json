@@ -33,7 +33,13 @@
       "id": "c1772048083312",
       "name": "HÁBITOS",
       "emoji": "🧠",
-      "links": []
+      "links": [
+        {
+          "id": "l1772048189523",
+          "name": "SEGUIMIENTO DE HÁBITOS",
+          "url": "https://josefragarionda.github.io/tareate/"
+        }
+      ]
     }
   ]
 }
