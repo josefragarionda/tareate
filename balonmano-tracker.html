@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Balonmano · Seguimiento</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Balonmano">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#12161C">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%2312161C'/%3E%3Ccircle cx='50' cy='50' r='30' fill='none' stroke='%23FFB13C' stroke-width='6'/%3E%3Cpath d='M50 20v60M20 50h60M28 28l44 44M72 28L28 72' stroke='%23FFB13C' stroke-width='4' fill='none'/%3E%3C/svg%3E">
+<style>
+  :root{
+    --ink:#12161C;
+    --surface:#1B212A;
+    --surface-2:#232B36;
+    --line:#2C3542;
+    --text:#F2F4F7;
+    --muted:#8A93A3;
+    --accent:#FFB13C;
+    --accent-dim:#8A6524;
+    --up:#3DDC97;
+    --down:#FF6A6A;
+    --danger:#FF5C5C;
+    --radius-card:18px;
+    --radius-sm:10px;
+    font-size:16px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background:var(--ink);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Arial,sans-serif;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+    overscroll-behavior-y:none;
+  }
+  ::selection{background:var(--accent);color:#1a1300;}
+  button{font-family:inherit;}
+
+  .app{max-width:980px;margin:0 auto;padding:0 18px 60px;}
+
+  header.top{
+    position:sticky;top:0;z-index:20;
+    padding:calc(env(safe-area-inset-top,0px) + 18px) 18px 14px;
+    margin:0 -18px 22px;
+    background:linear-gradient(180deg,var(--ink) 70%, rgba(18,22,28,0));
+    display:flex;align-items:flex-end;justify-content:space-between;gap:12px;
+  }
+  .brand{display:flex;flex-direction:column;gap:2px;}
+  .brand .kicker{font-size:.72rem;letter-spacing:.14em;color:var(--muted);font-weight:600;}
+  .brand h1{margin:0;font-size:1.7rem;font-weight:800;letter-spacing:-.01em;}
+  .brand h1 span{color:var(--accent);}
+
+  .btn{
+    border:none;border-radius:999px;cursor:pointer;
+    font-weight:700;font-size:.92rem;
+    display:inline-flex;align-items:center;gap:6px;
+    padding:11px 18px;transition:transform .12s ease, background .15s ease;
+  }
+  .btn:active{transform:scale(.96);}
+  .btn-accent{background:var(--accent);color:#1A1300;}
+  .btn-ghost{background:var(--surface-2);color:var(--text);}
+  .btn-danger{background:rgba(255,92,92,.14);color:var(--down);}
+  .btn-icon{
+    width:40px;height:40px;padding:0;border-radius:12px;
+    display:flex;align-items:center;justify-content:center;
+    background:var(--surface-2);color:var(--text);border:none;cursor:pointer;
+  }
+
+  /* ---------- Dashboard grid ---------- */
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+    gap:16px;
+  }
+  .card{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--radius-card);
+    padding:18px 18px 16px;
+    cursor:pointer;
+    display:flex;flex-direction:column;gap:10px;
+    transition:border-color .15s ease, transform .12s ease;
+  }
+  .card:active{transform:scale(.985);}
+  .card:hover{border-color:var(--accent-dim);}
+  .card-name{font-weight:700;font-size:1.02rem;line-height:1.25;min-height:2.5em;}
+  .record-row{display:flex;align-items:baseline;gap:8px;}
+  .record-num{font-size:2.6rem;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1;}
+  .record-label{font-size:.68rem;letter-spacing:.12em;color:var(--muted);font-weight:700;}
+  .card-meta{display:flex;justify-content:space-between;align-items:center;font-size:.82rem;color:var(--muted);}
+  .trend{font-weight:700;font-variant-numeric:tabular-nums;}
+  .trend.up{color:var(--up);}
+  .trend.down{color:var(--down);}
+  .trend.flat{color:var(--muted);}
+  .spark{width:100%;height:34px;display:block;}
+
+  .empty{
+    grid-column:1/-1;
+    border:1.5px dashed var(--line);
+    border-radius:var(--radius-card);
+    padding:46px 20px;text-align:center;color:var(--muted);
+  }
+  .empty strong{display:block;color:var(--text);font-size:1.1rem;margin-bottom:6px;}
+
+  /* ---------- Detail view ---------- */
+  .detail{display:none;}
+  .detail.show{display:block;}
+  .dashboard.hide{display:none;}
+
+  .detail-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:18px;}
+  .detail-title-row{display:flex;align-items:center;gap:10px;flex:1;min-width:0;}
+  .detail-title{font-size:1.5rem;font-weight:800;letter-spacing:-.01em;background:none;border:none;color:var(--text);width:100%;padding:2px 0;border-bottom:2px solid transparent;}
+  .detail-title:focus{outline:none;border-bottom-color:var(--accent);}
+
+  .hero{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-card);
+    padding:22px;margin-bottom:16px;
+    display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;
+  }
+  .hero-num{font-size:3.4rem;font-weight:800;font-variant-numeric:tabular-nums;line-height:1;}
+  .hero-label{font-size:.72rem;letter-spacing:.14em;color:var(--muted);font-weight:700;margin-bottom:6px;}
+  .hero-sub{color:var(--muted);font-size:.86rem;margin-top:6px;}
+
+  .panel{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-card);
+    padding:20px;margin-bottom:16px;
+  }
+  .panel h2{margin:0 0 14px;font-size:.98rem;font-weight:700;color:var(--text);}
+
+  .add-form{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;}
+  .field{display:flex;flex-direction:column;gap:6px;}
+  .field label{font-size:.72rem;color:var(--muted);font-weight:600;letter-spacing:.04em;}
+  .field input{
+    background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius-sm);
+    color:var(--text);padding:10px 12px;font-size:1rem;font-family:inherit;font-variant-numeric:tabular-nums;
+  }
+  .field input:focus{outline:none;border-color:var(--accent);}
+  .field.num input{width:110px;}
+  .field.date input{width:160px;}
+
+  .history{display:flex;flex-direction:column;}
+  .hist-row{
+    display:flex;align-items:center;gap:12px;
+    padding:11px 0;border-bottom:1px solid var(--line);
+  }
+  .hist-row:last-child{border-bottom:none;}
+  .hist-val{font-weight:800;font-size:1.15rem;font-variant-numeric:tabular-nums;min-width:44px;}
+  .hist-date{color:var(--muted);font-size:.86rem;flex:1;}
+  .hist-actions{display:flex;gap:6px;}
+  .hist-actions button{
+    background:none;border:none;color:var(--muted);cursor:pointer;
+    width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+  }
+  .hist-actions button:hover{background:var(--surface-2);color:var(--text);}
+  .hist-actions button.del:hover{color:var(--danger);}
+
+  .hist-row.editing .hist-val, .hist-row.editing .hist-date{display:none;}
+  .edit-inline{display:none;gap:8px;flex:1;align-items:center;}
+  .hist-row.editing .edit-inline{display:flex;}
+
+  svg.chart{width:100%;height:220px;display:block;}
+  .chart-empty{color:var(--muted);font-size:.9rem;padding:30px 0;text-align:center;}
+
+  .danger-zone{display:flex;justify-content:flex-end;}
+
+  /* ---------- Modal ---------- */
+  .overlay{
+    position:fixed;inset:0;background:rgba(8,10,13,.62);backdrop-filter:blur(2px);
+    display:none;align-items:center;justify-content:center;z-index:100;padding:20px;
+  }
+  .overlay.show{display:flex;}
+  .modal{
+    background:var(--surface);border:1px solid var(--line);border-radius:16px;
+    padding:22px;width:100%;max-width:360px;
+  }
+  .modal h3{margin:0 0 14px;font-size:1.05rem;}
+  .modal input{
+    width:100%;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius-sm);
+    color:var(--text);padding:11px 12px;font-size:1rem;font-family:inherit;margin-bottom:16px;
+  }
+  .modal input:focus{outline:none;border-color:var(--accent);}
+  .modal-actions{display:flex;justify-content:flex-end;gap:10px;}
+
+  @media (max-width:480px){
+    .record-num{font-size:2.2rem;}
+    .hero-num{font-size:2.6rem;}
+    .hero{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="top">
+    <div class="brand">
+      <span class="kicker">SEGUIMIENTO DE EJERCICIOS</span>
+      <h1>Balon<span>mano</span></h1>
+    </div>
+    <button class="btn btn-accent" id="btnAddExercise">+ Ejercicio</button>
+  </header>
+
+  <section class="dashboard" id="dashboard">
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <section class="detail" id="detail">
+    <div class="detail-head">
+      <button class="btn-icon" id="btnBack" aria-label="Volver">←</button>
+      <div class="detail-title-row">
+        <input class="detail-title" id="exerciseTitle" spellcheck="false">
+      </div>
+      <button class="btn-icon" id="btnDeleteExercise" aria-label="Eliminar ejercicio" title="Eliminar ejercicio">🗑</button>
+    </div>
+
+    <div class="hero">
+      <div>
+        <div class="hero-label">MEJOR MARCA</div>
+        <div class="hero-num" id="heroRecord">—</div>
+        <div class="hero-sub" id="heroSub">Sin anotaciones todavía</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Anotar récord</h2>
+      <div class="add-form">
+        <div class="field num">
+          <label for="newValue">Repeticiones</label>
+          <input type="number" id="newValue" inputmode="numeric" placeholder="0">
+        </div>
+        <div class="field date">
+          <label for="newDate">Fecha</label>
+          <input type="date" id="newDate">
+        </div>
+        <button class="btn btn-accent" id="btnAddRecord">Guardar</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Evolución</h2>
+      <div id="chartWrap"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Histórico</h2>
+      <div class="history" id="history"></div>
+    </div>
+  </section>
+
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h3 id="modalTitle">Nuevo ejercicio</h3>
+    <input type="text" id="modalInput" placeholder="Nombre del ejercicio" maxlength="60">
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="modalCancel">Cancelar</button>
+      <button class="btn btn-accent" id="modalSave">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var STORAGE_KEY = "balonmano_tracker_v1";
+  var state = { exercises: [] };
+  var currentId = null;
+
+  function load(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if(raw) state = JSON.parse(raw);
+    }catch(e){ state = { exercises: [] }; }
+    if(!state.exercises) state.exercises = [];
+  }
+  function save(){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+  }
+  function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+  function todayISO(){ return new Date().toISOString().slice(0,10); }
+  function fmtDate(iso){
+    var d = new Date(iso+"T00:00:00");
+    return d.toLocaleDateString("es-ES",{day:"2-digit",month:"short",year:"numeric"});
+  }
+  function sortedRecords(ex){
+    return ex.records.slice().sort(function(a,b){ return a.date.localeCompare(b.date) || a.id.localeCompare(b.id); });
+  }
+  function bestValue(ex){
+    if(!ex.records.length) return null;
+    return Math.max.apply(null, ex.records.map(function(r){return r.value;}));
+  }
+  function lastRecord(ex){
+    var sorted = sortedRecords(ex);
+    return sorted.length ? sorted[sorted.length-1] : null;
+  }
+
+  /* ---------- SVG helpers ---------- */
+  function sparkSVG(ex){
+    var recs = sortedRecords(ex);
+    if(recs.length < 2){
+      return '<svg class="spark" viewBox="0 0 100 30" preserveAspectRatio="none"></svg>';
+    }
+    var vals = recs.map(function(r){return r.value;});
+    var min = Math.min.apply(null, vals), max = Math.max.apply(null, vals);
+    var range = (max-min) || 1;
+    var n = recs.length;
+    var pts = recs.map(function(r,i){
+      var x = n===1 ? 0 : (i/(n-1))*100;
+      var y = 28 - ((r.value-min)/range)*26;
+      return x.toFixed(1)+","+y.toFixed(1);
+    }).join(" ");
+    return '<svg class="spark" viewBox="0 0 100 30" preserveAspectRatio="none">'+
+      '<polyline points="'+pts+'" fill="none" stroke="#FFB13C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>'+
+      '</svg>';
+  }
+
+  function chartSVG(ex){
+    var recs = sortedRecords(ex);
+    if(recs.length === 0){
+      return '<div class="chart-empty">Añade una primera marca para ver la evolución.</div>';
+    }
+    if(recs.length === 1){
+      return '<div class="chart-empty">Necesitas al menos dos anotaciones para ver la evolución.</div>';
+    }
+    var W=680,H=220,padL=36,padR=14,padT=18,padB=30;
+    var vals = recs.map(function(r){return r.value;});
+    var min = Math.min.apply(null, vals), max = Math.max.apply(null, vals);
+    if(min===max){ min = min-1; max = max+1; }
+    var n = recs.length;
+    function X(i){ return padL + (i/(n-1))*(W-padL-padR); }
+    function Y(v){ return padT + (1-((v-min)/(max-min)))*(H-padT-padB); }
+    var linePts = recs.map(function(r,i){ return X(i).toFixed(1)+","+Y(r.value).toFixed(1); }).join(" ");
+    var areaPts = "M"+X(0).toFixed(1)+","+(H-padB)+" L"+linePts.split(" ").map(function(p){return "L"+p;}).join(" ").slice(1)+" L"+X(n-1).toFixed(1)+","+(H-padB)+" Z";
+
+    var gridLines = "";
+    var steps = 4;
+    for(var s=0;s<=steps;s++){
+      var v = min + (max-min)*(s/steps);
+      var y = Y(v);
+      gridLines += '<line x1="'+padL+'" y1="'+y.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+y.toFixed(1)+'" stroke="#2C3542" stroke-width="1"/>';
+      gridLines += '<text x="'+(padL-8)+'" y="'+(y+4).toFixed(1)+'" text-anchor="end" font-size="11" fill="#8A93A3">'+Math.round(v)+'</text>';
+    }
+
+    var dots = recs.map(function(r,i){
+      return '<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(r.value).toFixed(1)+'" r="3.6" fill="#FFB13C" stroke="#12161C" stroke-width="1.5"/>';
+    }).join("");
+
+    var labelEvery = Math.max(1, Math.ceil(n/6));
+    var xLabels = recs.map(function(r,i){
+      if(i%labelEvery!==0 && i!==n-1) return "";
+      var d = new Date(r.date+"T00:00:00");
+      var lbl = d.toLocaleDateString("es-ES",{day:"2-digit",month:"2-digit"});
+      return '<text x="'+X(i).toFixed(1)+'" y="'+(H-8)+'" text-anchor="middle" font-size="10" fill="#8A93A3">'+lbl+'</text>';
+    }).join("");
+
+    return '<svg class="chart" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none">'+
+      '<defs><linearGradient id="fillGrad" x1="0" y1="0" x2="0" y2="1">'+
+      '<stop offset="0%" stop-color="#FFB13C" stop-opacity="0.28"/>'+
+      '<stop offset="100%" stop-color="#FFB13C" stop-opacity="0"/>'+
+      '</linearGradient></defs>'+
+      gridLines+
+      '<path d="'+areaPts+'" fill="url(#fillGrad)"/>'+
+      '<polyline points="'+linePts+'" fill="none" stroke="#FFB13C" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>'+
+      dots+
+      xLabels+
+      '</svg>';
+  }
+
+  /* ---------- Rendering: dashboard ---------- */
+  var grid = document.getElementById("grid");
+  function renderDashboard(){
+    grid.innerHTML = "";
+    if(state.exercises.length === 0){
+      grid.innerHTML = '<div class="empty"><strong>Todavía no hay ejercicios</strong>Añade tu primer ejercicio de balonmano para empezar a registrar tus récords.</div>';
+      return;
+    }
+    state.exercises.forEach(function(ex){
+      var best = bestValue(ex);
+      var last = lastRecord(ex);
+      var sorted = sortedRecords(ex);
+      var prev = sorted.length>1 ? sorted[sorted.length-2] : null;
+      var trendHTML = "";
+      if(last && prev){
+        var diff = last.value - prev.value;
+        var cls = diff>0 ? "up" : (diff<0 ? "down" : "flat");
+        var sign = diff>0 ? "+" : "";
+        trendHTML = '<span class="trend '+cls+'">'+sign+diff+'</span>';
+      }
+      var card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML =
+        '<div class="card-name">'+escapeHTML(ex.name)+'</div>'+
+        '<div class="record-row"><div class="record-num">'+(best===null?"—":best)+'</div></div>'+
+        '<div class="record-label">MEJOR MARCA</div>'+
+        sparkSVG(ex)+
+        '<div class="card-meta"><span>'+(last?fmtDate(last.date):"Sin anotar")+'</span>'+trendHTML+'</div>';
+      card.addEventListener("click", function(){ openDetail(ex.id); });
+      grid.appendChild(card);
+    });
+  }
+
+  function escapeHTML(s){
+    var d = document.createElement("div");
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  /* ---------- Detail view ---------- */
+  var dashboardEl = document.getElementById("dashboard");
+  var detailEl = document.getElementById("detail");
+  var exerciseTitle = document.getElementById("exerciseTitle");
+  var heroRecord = document.getElementById("heroRecord");
+  var heroSub = document.getElementById("heroSub");
+  var chartWrap = document.getElementById("chartWrap");
+  var historyEl = document.getElementById("history");
+  var newValue = document.getElementById("newValue");
+  var newDate = document.getElementById("newDate");
+
+  function getExercise(id){
+    for(var i=0;i<state.exercises.length;i++) if(state.exercises[i].id===id) return state.exercises[i];
+    return null;
+  }
+
+  function openDetail(id){
+    currentId = id;
+    dashboardEl.classList.add("hide");
+    detailEl.classList.add("show");
+    newDate.value = todayISO();
+    newValue.value = "";
+    renderDetail();
+  }
+  function closeDetail(){
+    currentId = null;
+    detailEl.classList.remove("show");
+    dashboardEl.classList.remove("hide");
+    renderDashboard();
+  }
+
+  function renderDetail(){
+    var ex = getExercise(currentId);
+    if(!ex){ closeDetail(); return; }
+    exerciseTitle.value = ex.name;
+    var best = bestValue(ex);
+    var last = lastRecord(ex);
+    heroRecord.textContent = best===null ? "—" : best;
+    heroSub.textContent = last ? ("Última anotación: "+last.value+" · "+fmtDate(last.date)) : "Sin anotaciones todavía";
+    chartWrap.innerHTML = chartSVG(ex);
+    renderHistory(ex);
+  }
+
+  function renderHistory(ex){
+    var sorted = sortedRecords(ex).slice().reverse();
+    if(sorted.length===0){
+      historyEl.innerHTML = '<div class="chart-empty">Aún no has anotado ningún récord.</div>';
+      return;
+    }
+    historyEl.innerHTML = "";
+    sorted.forEach(function(r){
+      var row = document.createElement("div");
+      row.className = "hist-row";
+      row.dataset.id = r.id;
+      row.innerHTML =
+        '<div class="hist-val">'+r.value+'</div>'+
+        '<div class="hist-date">'+fmtDate(r.date)+'</div>'+
+        '<div class="edit-inline">'+
+          '<input type="number" class="edit-val" value="'+r.value+'" style="width:70px;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;color:var(--text);padding:7px 9px;font-family:inherit;">'+
+          '<input type="date" class="edit-date" value="'+r.date+'" style="background:var(--surface-2);border:1px solid var(--line);border-radius:8px;color:var(--text);padding:7px 9px;font-family:inherit;">'+
+        '</div>'+
+        '<div class="hist-actions">'+
+          '<button class="edit" title="Editar">✎</button>'+
+          '<button class="save" title="Guardar" style="display:none;">✓</button>'+
+          '<button class="del" title="Eliminar">🗑</button>'+
+        '</div>';
+      historyEl.appendChild(row);
+
+      row.querySelector(".edit").addEventListener("click", function(){
+        row.classList.add("editing");
+        row.querySelector(".edit").style.display = "none";
+        row.querySelector(".save").style.display = "flex";
+      });
+      row.querySelector(".save").addEventListener("click", function(){
+        var v = parseInt(row.querySelector(".edit-val").value, 10);
+        var d = row.querySelector(".edit-date").value;
+        if(isNaN(v) || !d) return;
+        var rec = ex.records.find(function(x){return x.id===r.id;});
+        if(rec){ rec.value = v; rec.date = d; save(); renderDetail(); }
+      });
+      row.querySelector(".del").addEventListener("click", function(){
+        if(!confirm("¿Eliminar esta anotación?")) return;
+        ex.records = ex.records.filter(function(x){return x.id!==r.id;});
+        save(); renderDetail();
+      });
+    });
+  }
+
+  /* ---------- Events: add record ---------- */
+  document.getElementById("btnAddRecord").addEventListener("click", function(){
+    var ex = getExercise(currentId);
+    if(!ex) return;
+    var v = parseInt(newValue.value, 10);
+    var d = newDate.value || todayISO();
+    if(isNaN(v)){ newValue.focus(); return; }
+    ex.records.push({ id: uid(), value: v, date: d });
+    save();
+    newValue.value = "";
+    newDate.value = todayISO();
+    renderDetail();
+  });
+
+  document.getElementById("btnBack").addEventListener("click", closeDetail);
+
+  exerciseTitle.addEventListener("blur", function(){
+    var ex = getExercise(currentId);
+    if(!ex) return;
+    var name = exerciseTitle.value.trim();
+    if(name){ ex.name = name; save(); } else { exerciseTitle.value = ex.name; }
+  });
+  exerciseTitle.addEventListener("keydown", function(e){ if(e.key==="Enter") exerciseTitle.blur(); });
+
+  document.getElementById("btnDeleteExercise").addEventListener("click", function(){
+    var ex = getExercise(currentId);
+    if(!ex) return;
+    if(!confirm('¿Eliminar el ejercicio "'+ex.name+'" y todo su histórico?')) return;
+    state.exercises = state.exercises.filter(function(x){return x.id!==ex.id;});
+    save();
+    closeDetail();
+  });
+
+  /* ---------- Modal: add exercise ---------- */
+  var overlay = document.getElementById("overlay");
+  var modalInput = document.getElementById("modalInput");
+  document.getElementById("btnAddExercise").addEventListener("click", function(){
+    modalInput.value = "";
+    overlay.classList.add("show");
+    setTimeout(function(){ modalInput.focus(); }, 50);
+  });
+  document.getElementById("modalCancel").addEventListener("click", function(){
+    overlay.classList.remove("show");
+  });
+  overlay.addEventListener("click", function(e){ if(e.target===overlay) overlay.classList.remove("show"); });
+  function commitNewExercise(){
+    var name = modalInput.value.trim();
+    if(!name) return;
+    var ex = { id: uid(), name: name, records: [] };
+    state.exercises.push(ex);
+    save();
+    overlay.classList.remove("show");
+    renderDashboard();
+    openDetail(ex.id);
+  }
+  document.getElementById("modalSave").addEventListener("click", commitNewExercise);
+  modalInput.addEventListener("keydown", function(e){ if(e.key==="Enter") commitNewExercise(); });
+
+  /* ---------- Init ---------- */
+  load();
+  if(state.exercises.length === 0){
+    state.exercises.push({
+      id: uid(),
+      name: "Dejar caer la pelota y recogerla antes de que toque el suelo",
+      records: []
+    });
+    save();
+  }
+  renderDashboard();
+})();
+</script>
+</body>
+</html>
