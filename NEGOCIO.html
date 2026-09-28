@@ -153,7 +153,21 @@ document.getElementById('productForm').onsubmit=e=>{e.preventDefault();let old=e
 function toggleSold(id){let p=products.find(x=>x.id===id);if(!p)return;p.status=p.status==='Vendido'?'Por publicar':'Vendido';p.soldAt=p.status==='Vendido'?new Date().toISOString():null;save()}
 function toggleSoldFromForm(){if(!editingId)return;toggleSold(editingId);let p=products.find(x=>x.id===editingId);document.getElementById('soldBtn').textContent=p.status==='Vendido'?'Marcar como activo':'Marcar como vendido';}
 function copyAd(id){let p=products.find(x=>x.id===id);navigator.clipboard.writeText(p.description||generated(p)).then(()=>alert('Anuncio copiado al portapapeles.'))}
-function removeProduct(id){if(confirm('¿Eliminar este producto?')){products=products.filter(p=>p.id!==id);save()}}
+async function removeProduct(id){
+  if(!confirm('¿Eliminar este producto?'))return;
+
+  products=products.filter(p=>p.id!==id);
+  save();
+
+  if(sb&&sbUser){
+    const {error}=await sb.from('products').delete().eq('id',id);
+    if(error){
+      alert('El producto se eliminó localmente, pero no se pudo eliminar de Supabase: '+error.message);
+    }
+  }
+
+  render();
+}
 function exportJSON(){let blob=new Blob([JSON.stringify(products,null,2)],{type:'application/json'});download(blob,'mi-segunda-mano-backup.json')}
 function exportCSV(){let rows=[['Código','Marca','Modelo','Talla','Categoría','Estado producto','Compra','Venta','Beneficio','Fecha','Vinted','Wallapop','Estado venta','Fotos']];products.forEach(p=>rows.push([p.code,p.brand,p.model,p.size,p.category,p.condition,p.buy,p.sell,p.sell-p.buy,p.date,p.vinted,p.wallapop,p.status,(p.photos||[]).length]));let csv=rows.map(r=>r.map(v=>'"'+String(v??'').replaceAll('"','""')+'"').join(';')).join('\n');download(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}),'mi-segunda-mano.csv')}
 function download(blob,name){let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500)}
