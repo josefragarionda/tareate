@@ -54,7 +54,78 @@ async function logoutSupabase(){if(sb) await sb.auth.signOut();sbUser=null;setSy
 async function forgotPassword(){const email=document.getElementById('sbEmail').value.trim();if(!email)return alert('Introduce tu email.');if(!sb&&!(await saveSupabaseConfig()))return;const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.href.split('#')[0]});document.getElementById('syncHelp').textContent=error?error.message:'Te hemos enviado un correo para recuperar la contraseña.'}
 function cleanProduct(p){let x={...p};delete x.created;delete x.updated;return x}
 async function pullProducts(){if(!sb||!sbUser)return;setSyncStatus('Sincronizando…','blue');const {data,error}=await sb.from('products').select('*').order('updated_at',{ascending:false});if(error){setSyncStatus('Falta configurar la tabla','red');return;}if(data&&data.length){products=data.map(r=>({...r.data,id:r.id,created:r.created_at,updated:r.updated_at}));localStorage.setItem(KEY,JSON.stringify(products));render()}setSyncStatus('Sincronizado','green')}
-async function syncNow(){if(!sb||!sbUser){setSyncStatus('Sin configurar','orange');return;}syncing=true;setSyncStatus('Subiendo…','blue');try{for(const p of products){const payload={id:p.id,user_id:sbUser.id,data:cleanProduct(p),updated_at:new Date(p.updated||Date.now()).toISOString()};const {error}=await sb.from('products').upsert(payload,{onConflict:'id'});if(error)throw error;}const localIds=new Set(products.map(p=>p.id));const {data:remote}=await sb.from('products').select('id');for(const r of (remote||[]))if(!localIds.has(r.id))await sb.from('products').delete().eq('id',r.id);setSyncStatus('Sincronizado','green')}catch(e){setSyncStatus('Error: '+e.message,'red')}finally{syncing=false}}
+async function syncNow(){
+  if(!sb||!sbUser){
+    setSyncStatus('Sin configurar','orange');
+    return;
+  }
+
+  syncing=true;
+  setSyncStatus('Sincronizando…','blue');
+
+  try{
+    const {data:remote,error:remoteError}=await sb
+      .from('products')
+      .select('*')
+      .order('updated_at',{ascending:false});
+
+    if(remoteError)throw remoteError;
+
+    const merged=new Map();
+
+    for(const r of (remote||[])){
+      merged.set(r.id,{
+        ...r.data,
+        id:r.id,
+        created:r.created_at,
+        updated:r.updated_at
+      });
+    }
+
+    for(const p of products){
+      const existing=merged.get(p.id);
+
+      if(!existing){
+        merged.set(p.id,p);
+      }else{
+        const localTime=new Date(p.updated||0).getTime();
+        const remoteTime=new Date(existing.updated||0).getTime();
+
+        if(localTime>remoteTime){
+          merged.set(p.id,p);
+        }
+      }
+    }
+
+    const mergedProducts=Array.from(merged.values());
+
+    for(const p of mergedProducts){
+      const payload={
+        id:p.id,
+        user_id:sbUser.id,
+        data:cleanProduct(p),
+        updated_at:new Date(p.updated||Date.now()).toISOString()
+      };
+
+      const {error}=await sb
+        .from('products')
+        .upsert(payload,{onConflict:'id'});
+
+      if(error)throw error;
+    }
+
+    products=mergedProducts;
+    localStorage.setItem(KEY,JSON.stringify(products));
+    render();
+
+    setSyncStatus('Sincronizado','green');
+
+  }catch(e){
+    setSyncStatus('Error: '+e.message,'red');
+  }finally{
+    syncing=false;
+  }
+}
 window.addEventListener('load',()=>initSupabase());
 
 const KEY='segunda_mano_v2';let products=JSON.parse(localStorage.getItem(KEY)||localStorage.getItem('segunda_mano_v1')||'[]');let editingId=null;let currentPhotos=[];let sb=null;let sbUser=null;let syncing=false;let supabaseConfig=JSON.parse(localStorage.getItem('supabase_config')||'null');
