@@ -253,7 +253,22 @@ function removePhoto(i){currentPhotos.splice(i,1);renderPhotos()}
 function fileToDataURL(file){return new Promise((res,rej)=>{let r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file)})}
 document.getElementById('photos').onchange=async e=>{for(const f of [...e.target.files]){if(f.size>4*1024*1024){alert('Una foto supera 4 MB.');continue}if(sb&&sbUser){try{const ext=(f.name.split('.').pop()||'jpg').toLowerCase();const path=sbUser.id+'/'+crypto.randomUUID()+'.'+ext;const {error}=await sb.storage.from('product-photos').upload(path,f,{upsert:false,contentType:f.type});if(error) throw error;const {data}=sb.storage.from('product-photos').getPublicUrl(path);currentPhotos.push(data.publicUrl)}catch(err){alert('No se pudo subir la foto: '+err.message);}}else currentPhotos.push(await fileToDataURL(f))}e.target.value='';renderPhotos()}
 document.getElementById('productForm').onsubmit=async e=>{e.preventDefault();let old=editingId?products.find(x=>x.id===editingId):null;let p={id:editingId||crypto.randomUUID(),code:code.value.trim(),brand:brand.value.trim(),model:model.value.trim(),size:size.value.trim(),category:category.value,condition:condition.value,buy:Number(buy.value),sell:Number(sell.value),min:Number(min.value)||0,date:date.value,vinted:vinted.value,wallapop:wallapop.value,photos:currentPhotos,notes:notes.value.trim(),description:description.value.trim(),status:old?.status||'Por publicar',created:old?.created||new Date().toISOString(),updated:new Date().toISOString()};if(!p.description)p.description=generated(p);if(old)products=products.map(x=>x.id===editingId?p:x);else products.push(p);await save();showView('productos');resetForm()}
-async function toggleSold(id){let p=products.find(x=>x.id===id);if(!p)return;p.status=p.status==='Vendido'?'Por publicar':'Vendido';p.soldAt=p.status==='Vendido'?new Date().toISOString():null;p.updated=new Date().toISOString();await save()}
+async function toggleSold(id){
+  let p=products.find(x=>x.id===id);
+  if(!p)return;
+
+  p.status=p.status==='Vendido'?'Por publicar':'Vendido';
+
+  if(p.status==='Vendido'){
+    p.soldAt=new Date().toISOString();
+  }else{
+    p.soldAt=null;
+  }
+
+  p.updated=new Date().toISOString();
+
+  await save();
+}
 function toggleSoldFromForm(){if(!editingId)return;toggleSold(editingId);let p=products.find(x=>x.id===editingId);document.getElementById('soldBtn').textContent=p.status==='Vendido'?'Marcar como activo':'Marcar como vendido';}
 function copyAd(id){let p=products.find(x=>x.id===id);navigator.clipboard.writeText(p.description||generated(p)).then(()=>alert('Anuncio copiado al portapapeles.'))}
 async function removeProduct(id){
