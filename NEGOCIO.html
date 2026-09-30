@@ -210,31 +210,37 @@ async function removeProduct(id){
       return;
     }
 
-    // 2. Eliminar las fotos de Storage.
-    if(product.photos&&product.photos.length){
+    // 2. Eliminar las fotos del Storage.
+    if(Array.isArray(product.photos)&&product.photos.length){
+
+      const prefix='/storage/v1/object/public/product-photos/';
+
       const paths=product.photos
         .map(url=>{
-          try{
-            const marker='/storage/v1/object/public/product-photos/';
-            const pos=url.indexOf(marker);
-            if(pos===-1)return null;
-            return decodeURIComponent(url.substring(pos+marker.length));
-          }catch{
-            return null;
-          }
+          if(typeof url!=='string')return null;
+
+          const pos=url.indexOf(prefix);
+          if(pos===-1)return null;
+
+          return decodeURIComponent(
+            url.substring(pos+prefix.length)
+          );
         })
         .filter(Boolean);
 
+      console.log('Fotos a eliminar:',paths);
+
       if(paths.length){
-        const {error:photoError}=await sb
+        const {data:removedPhotos,error:photoError}=await sb
           .storage
           .from('product-photos')
           .remove(paths);
-          
-          console.log('Fotos a eliminar:', paths);
+
+        console.log('Resultado eliminación fotos:',removedPhotos,photoError);
 
         if(photoError){
-          alert('El producto se eliminará, pero no se pudieron eliminar todas las fotos: '+photoError.message);
+          alert('No se pudieron eliminar las fotos: '+photoError.message);
+          return;
         }
       }
     }
@@ -258,9 +264,4 @@ async function removeProduct(id){
   render();
   setSyncStatus('Sincronizado','green');
 }
-function exportJSON(){let blob=new Blob([JSON.stringify(products,null,2)],{type:'application/json'});download(blob,'mi-segunda-mano-backup.json')}
-function exportCSV(){let rows=[['Código','Marca','Modelo','Talla','Categoría','Estado producto','Compra','Venta','Beneficio','Fecha','Vinted','Wallapop','Estado venta','Fotos']];products.forEach(p=>rows.push([p.code,p.brand,p.model,p.size,p.category,p.condition,p.buy,p.sell,p.sell-p.buy,p.date,p.vinted,p.wallapop,p.status,(p.photos||[]).length]));let csv=rows.map(r=>r.map(v=>'"'+String(v??'').replaceAll('"','""')+'"').join(';')).join('\n');download(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}),'mi-segunda-mano.csv')}
-function download(blob,name){let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500)}
-document.getElementById('importFile').onchange=e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=async()=>{try{products=JSON.parse(r.result);localStorage.setItem(KEY,JSON.stringify(products));render();if(sb&&sbUser)await syncNow();alert('Copia restaurada.')}catch{alert('Archivo no válido.')}};r.readAsText(f)};
-render();
 </script></body></html>
