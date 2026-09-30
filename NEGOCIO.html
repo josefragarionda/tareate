@@ -230,6 +230,8 @@ async function removeProduct(id){
           .storage
           .from('product-photos')
           .remove(paths);
+          
+          console.log('Fotos a eliminar:', paths);
 
         if(photoError){
           alert('El producto se eliminará, pero no se pudieron eliminar todas las fotos: '+photoError.message);
