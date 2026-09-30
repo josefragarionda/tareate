@@ -329,12 +329,13 @@ async function removeProduct(id){
   // 4. Eliminarlo también del dispositivo actual.
   products=products.filter(p=>p.id!==id);
   localStorage.setItem(KEY,JSON.stringify(products));
-    ['searchProducts','filterStatus','filterCategory','filterVinted','filterWallapop']
+    
+  render();
+  setSyncStatus('Sincronizado','green');
+}
+  ['searchProducts','filterStatus','filterCategory','filterVinted','filterWallapop']
   .forEach(id=>{
     document.getElementById(id)?.addEventListener('input',render);
     document.getElementById(id)?.addEventListener('change',render);
   });
-  render();
-  setSyncStatus('Sincronizado','green');
-}
 </script></body></html>
