@@ -191,11 +191,14 @@ function copyAd(id){let p=products.find(x=>x.id===id);navigator.clipboard.writeT
 async function removeProduct(id){
   if(!confirm('¿Eliminar este producto?'))return;
 
+  const product=products.find(p=>p.id===id);
+  if(!product)return;
+
   const now=new Date().toISOString();
 
-  // Si hay sesión, primero registramos la eliminación. Esto evita que otro
-  // dispositivo vuelva a crear el producto durante una sincronización.
   if(sb&&sbUser){
+
+    // 1. Registrar la eliminación para que no reaparezca en otros dispositivos.
     const {error}=await sb.from('deleted_products').upsert({
       user_id:sbUser.id,
       product_id:id,
@@ -207,6 +210,34 @@ async function removeProduct(id){
       return;
     }
 
+    // 2. Eliminar las fotos de Storage.
+    if(product.photos&&product.photos.length){
+      const paths=product.photos
+        .map(url=>{
+          try{
+            const marker='/storage/v1/object/public/product-photos/';
+            const pos=url.indexOf(marker);
+            if(pos===-1)return null;
+            return decodeURIComponent(url.substring(pos+marker.length));
+          }catch{
+            return null;
+          }
+        })
+        .filter(Boolean);
+
+      if(paths.length){
+        const {error:photoError}=await sb
+          .storage
+          .from('product-photos')
+          .remove(paths);
+
+        if(photoError){
+          alert('El producto se eliminará, pero no se pudieron eliminar todas las fotos: '+photoError.message);
+        }
+      }
+    }
+
+    // 3. Eliminar el producto de la tabla.
     const {error:deleteError}=await sb
       .from('products')
       .delete()
@@ -219,6 +250,7 @@ async function removeProduct(id){
     }
   }
 
+  // 4. Eliminarlo también del dispositivo actual.
   products=products.filter(p=>p.id!==id);
   localStorage.setItem(KEY,JSON.stringify(products));
   render();
