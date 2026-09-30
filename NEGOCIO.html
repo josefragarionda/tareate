@@ -26,7 +26,53 @@ form{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.field{display:fl
 <div class="modal" id="passwordModal" style="display:none;position:fixed;inset:0;background:#0006;z-index:30;padding:20px"><div class="card" style="max-width:460px;margin:40px auto"><div class="editor-title"><h2>Nueva contraseña</h2></div><p class="small">Introduce tu nueva contraseña para recuperar el acceso a tu cuenta.</p><div class="field"><label>Nueva contraseña</label><input id="newPassword" type="password" minlength="6" autocomplete="new-password"></div><div class="field" style="margin-top:10px"><label>Repetir contraseña</label><input id="newPassword2" type="password" minlength="6" autocomplete="new-password"></div><div class="actions"><button class="btn green" onclick="updateRecoveredPassword()">Guardar nueva contraseña</button></div><div id="passwordHelp" class="small" style="margin-top:10px"></div></div></div>
 <div class="tabs"><button class="tab active" data-view="inicio">Inicio</button><button class="tab" data-view="productos">Productos</button><button class="tab" data-view="nuevo">Nuevo producto</button><button class="tab" data-view="calendario">Calendario</button></div>
 <section id="inicio" class="view active"><div class="grid" id="metrics"></div><div class="card" style="margin-top:14px"><h2>Acciones pendientes</h2><div id="pendientes"></div></div></section>
-<section id="productos" class="view"><div class="actions"><button class="btn" onclick="newProduct()">+ Nuevo producto</button><button class="btn secondary" onclick="exportCSV()">Exportar CSV</button><button class="btn secondary" onclick="exportJSON()">Copia de seguridad</button><label class="btn secondary">Importar<input id="importFile" type="file" accept="application/json" hidden></label></div><div class="tablewrap"><table class="table"><thead><tr><th>Producto</th><th>Talla</th><th>Compra</th><th>Venta</th><th>Beneficio</th><th>Estado</th><th>Plataformas</th><th>Acciones</th></tr></thead><tbody id="productsBody"></tbody></table></div></section>
+<section id="productos" class="view"><div class="card" style="margin-bottom:12px">
+  <div class="grid" style="grid-template-columns:2fr 1fr 1fr 1fr 1fr">
+    <div class="field">
+      <label>Buscar</label>
+      <input id="searchProducts" type="search" placeholder="Código, marca, modelo o talla">
+    </div>
+
+    <div class="field">
+      <label>Estado</label>
+      <select id="filterStatus">
+        <option value="">Todos</option>
+        <option value="Por publicar">Por publicar</option>
+        <option value="Vendido">Vendido</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Categoría</label>
+      <select id="filterCategory">
+        <option value="">Todas</option>
+        <option value="Zapatillas">Zapatillas</option>
+        <option value="Botas">Botas</option>
+        <option value="Sandalias">Sandalias</option>
+        <option value="Zapatos escolares">Zapatos escolares</option>
+        <option value="Otro">Otro</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Vinted</label>
+      <select id="filterVinted">
+        <option value="">Todos</option>
+        <option value="Sí">Sí</option>
+        <option value="No">No</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Wallapop</label>
+      <select id="filterWallapop">
+        <option value="">Todos</option>
+        <option value="Sí">Sí</option>
+        <option value="No">No</option>
+      </select>
+    </div>
+  </div>
+</div><div class="actions"><button class="btn" onclick="newProduct()">+ Nuevo producto</button><button class="btn secondary" onclick="exportCSV()">Exportar CSV</button><button class="btn secondary" onclick="exportJSON()">Copia de seguridad</button><label class="btn secondary">Importar<input id="importFile" type="file" accept="application/json" hidden></label></div><div class="tablewrap"><table class="table"><thead><tr><th>Producto</th><th>Talla</th><th>Compra</th><th>Venta</th><th>Beneficio</th><th>Estado</th><th>Plataformas</th><th>Acciones</th></tr></thead><tbody id="productsBody"></tbody></table></div></section>
 <section id="nuevo" class="view"><div class="card"><div class="editor-title"><h2 id="formTitle">Nuevo producto</h2><button class="btn secondary" type="button" onclick="showView('productos')">Cancelar</button></div>
 <form id="productForm">
 <div class="field"><label>Código</label><input id="code" placeholder="Z001" required></div><div class="field"><label>Marca</label><input id="brand" placeholder="Nike" required></div><div class="field"><label>Modelo</label><input id="model" placeholder="Revolution 6"></div>
@@ -171,10 +217,32 @@ document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>showView(b.dataset.vi
 function title(p){return `${p.brand} ${p.model||''} ${p.category.toLowerCase()} infantil talla ${p.size}`.replace(/\s+/g,' ').trim()}
 function generated(p){return `${title(p)}\n\n${p.brand} ${p.model||''} en ${p.condition.toLowerCase()}.\n\n• Talla: ${p.size}\n• Marca: ${p.brand}\n• Categoría: ${p.category}\n• Estado: ${p.condition}\n${p.notes?'• Detalles: '+p.notes+'\n':''}\nSe envía bien protegido. Si necesitas alguna medida o fotografía adicional, puedes preguntarme.`}
 function render(){
-const active=products.filter(p=>p.status!=='Vendido'),sold=products.filter(p=>p.status==='Vendido');const profit=sold.reduce((s,p)=>s+(Number(p.sell)-Number(p.buy)),0);const pending=active.filter(p=>p.status==='Por publicar').length;
+const search=(document.getElementById('searchProducts')?.value||'').trim().toLowerCase();
+const filterStatus=document.getElementById('filterStatus')?.value||'';
+const filterCategory=document.getElementById('filterCategory')?.value||'';
+const filterVinted=document.getElementById('filterVinted')?.value||'';
+const filterWallapop=document.getElementById('filterWallapop')?.value||'';
+
+const filteredProducts=products.filter(p=>{
+  const text=[
+    p.code,
+    p.brand,
+    p.model,
+    p.size
+  ].join(' ').toLowerCase();
+
+  return (!search||text.includes(search))
+    && (!filterStatus||p.status===filterStatus)
+    && (!filterCategory||p.category===filterCategory)
+    && (!filterVinted||p.vinted===filterVinted)
+    && (!filterWallapop||p.wallapop===filterWallapop);
+});
+
+const active=products.filter(p=>p.status!=='Vendido');
+const sold=products.filter(p=>p.status==='Vendido');const profit=sold.reduce((s,p)=>s+(Number(p.sell)-Number(p.buy)),0);const pending=active.filter(p=>p.status==='Por publicar').length;
 document.getElementById('metrics').innerHTML=[['Stock activo',active.length],['Por publicar',pending],['Vendidos',sold.length],['Beneficio realizado',euro(profit)]].map(x=>`<div class="card metric"><span>${x[0]}</span><strong>${x[1]}</strong></div>`).join('');
 const pp=active.filter(p=>p.status==='Por publicar').sort((a,b)=>(a.date||'9999').localeCompare(b.date||'9999')).slice(0,8);document.getElementById('pendientes').innerHTML=pp.length?pp.map(p=>`<div class="product" style="padding:9px 0;border-bottom:1px solid var(--border)">${p.photos?.[0]?`<img class="thumb" src="${p.photos[0]}">`:''}<div><h3>${title(p)}</h3><p>${p.date||'Sin fecha'} · ${euro(p.sell)} · ${p.vinted==='Sí'?'Vinted ':''}${p.wallapop==='Sí'?'Wallapop':''}</p></div></div>`).join(''):'<div class="empty">No hay publicaciones pendientes.</div>';
-document.getElementById('productsBody').innerHTML=products.length?products.map(p=>{let pr=Number(p.sell)-Number(p.buy),plats=[p.vinted==='Sí'?'Vinted':'',p.wallapop==='Sí'?'Wallapop':''].filter(Boolean).join(' + ');let thumb=p.photos?.[0]?`<img class="thumb" src="${p.photos[0]}">`:'<div class="thumb"></div>';return `<tr><td><div class="product">${thumb}<div><b>${title(p)}</b><br><span class="pill">${p.code}</span></div></div></td><td>${p.size}</td><td>${euro(p.buy)}</td><td>${euro(p.sell)}</td><td>${euro(pr)}</td><td><span class="pill ${p.status==='Vendido'?'green':p.status==='Por publicar'?'blue':'orange'}">${p.status}</span></td><td>${plats||'—'}</td><td><div class="actions"><button class="btn secondary" onclick="editProduct('${p.id}')">Editar</button><button class="btn secondary" onclick="copyAd('${p.id}')">Copiar anuncio</button><button class="btn ${p.status==='Vendido'?'orange':'green'}" onclick="toggleSold('${p.id}')">${p.status==='Vendido'?'Marcar activo':'Marcar vendido'}</button><button class="btn danger" onclick="removeProduct('${p.id}')">Eliminar</button></div></td></tr>`}).join(''):'<tr><td colspan="8" class="empty">Todavía no tienes productos.</td></tr>';
+document.getElementById('productsBody').innerHTML=filteredProducts.length?filteredProducts.map(p=>{let pr=Number(p.sell)-Number(p.buy),plats=[p.vinted==='Sí'?'Vinted':'',p.wallapop==='Sí'?'Wallapop':''].filter(Boolean).join(' + ');let thumb=p.photos?.[0]?`<img class="thumb" src="${p.photos[0]}">`:'<div class="thumb"></div>';return `<tr><td><div class="product">${thumb}<div><b>${title(p)}</b><br><span class="pill">${p.code}</span></div></div></td><td>${p.size}</td><td>${euro(p.buy)}</td><td>${euro(p.sell)}</td><td>${euro(pr)}</td><td><span class="pill ${p.status==='Vendido'?'green':p.status==='Por publicar'?'blue':'orange'}">${p.status}</span></td><td>${plats||'—'}</td><td><div class="actions"><button class="btn secondary" onclick="editProduct('${p.id}')">Editar</button><button class="btn secondary" onclick="copyAd('${p.id}')">Copiar anuncio</button><button class="btn ${p.status==='Vendido'?'orange':'green'}" onclick="toggleSold('${p.id}')">${p.status==='Vendido'?'Marcar activo':'Marcar vendido'}</button><button class="btn danger" onclick="removeProduct('${p.id}')">Eliminar</button></div></td></tr>`}).join(''):'<tr><td colspan="8" class="empty">Todavía no tienes productos.</td></tr>';
 renderCalendar();}
 function renderCalendar(){let el=document.getElementById('calendar'),now=new Date(),days=[];for(let i=0;i<7;i++){let d=new Date(now);d.setDate(now.getDate()+i);let iso=d.toISOString().slice(0,10),label=d.toLocaleDateString('es-ES',{weekday:'short',day:'numeric',month:'short'}),ps=products.filter(p=>p.date===iso&&p.status!=='Vendido');days.push(`<div class="day"><h4>${label}</h4>${ps.length?ps.map(p=>`<div class="event"><b>${p.brand} ${p.size}</b><br>${p.vinted==='Sí'?'Vinted ':''}${p.wallapop==='Sí'?'Wallapop':''}</div>`).join(''):'<span style="color:#9aa2ad;font-size:11px">Sin publicaciones</span>'}</div>`)}el.innerHTML=days.join('')}
 function resetForm(){editingId=null;currentPhotos=[];document.getElementById('productForm').reset();document.getElementById('formTitle').textContent='Nuevo producto';document.getElementById('saveBtn').textContent='Guardar producto';document.getElementById('soldBtn').style.display='inline-block';renderPhotos()}
@@ -261,6 +329,11 @@ async function removeProduct(id){
   // 4. Eliminarlo también del dispositivo actual.
   products=products.filter(p=>p.id!==id);
   localStorage.setItem(KEY,JSON.stringify(products));
+    ['searchProducts','filterStatus','filterCategory','filterVinted','filterWallapop']
+  .forEach(id=>{
+    document.getElementById(id)?.addEventListener('input',render);
+    document.getElementById(id)?.addEventListener('change',render);
+  });
   render();
   setSyncStatus('Sincronizado','green');
 }
