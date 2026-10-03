@@ -32,12 +32,14 @@ form{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.field{display:fl
   <div class="card" style="margin-top:14px">
     <h2>Beneficio mensual</h2>
     <p class="small">Ingresos por ventas menos coste de compra de los productos vendidos.</p>
-    <div id="statsMonthly"></div>
+    <div id="chartMonthly" style="width:100%;min-height:260px;overflow:hidden"></div>
+<div id="statsMonthly"></div>
   </div>
 
   <div class="card" style="margin-top:14px">
     <h2>Beneficio acumulado</h2>
-    <div id="statsAccumulated"></div>
+    <div id="chartAccumulated" style="width:100%;min-height:260px;overflow:hidden"></div>
+<div id="statsAccumulated"></div>
   </div>
 </section>
 <section id="productos" class="view"><div class="card" style="margin-bottom:12px">
@@ -288,6 +290,29 @@ function renderStatistics(){
   const months = Object.keys(monthly).sort();
   let accumulated = 0;
 
+  
+const monthlyChart = document.getElementById('chartMonthly');
+
+if (!months.length) {
+  monthlyChart.innerHTML = '<div class="empty">No hay datos para representar.</div>';
+} else {
+  const maxValue = Math.max(1, ...months.map(m => Math.abs(monthly[m])));
+  monthlyChart.innerHTML = `
+    <div style="display:flex;align-items:flex-end;gap:10px;height:230px;padding:20px 4px 8px;border-bottom:1px solid var(--border)">
+      ${months.map(m => {
+        const value = monthly[m];
+        const height = Math.max(4, Math.abs(value) / maxValue * 150);
+        const label = new Date(Number(m.slice(0,4)), Number(m.slice(5,7))-1, 1)
+          .toLocaleDateString('es-ES',{month:'short',year:'2-digit'});
+        return `
+          <div style="flex:1;min-width:0;text-align:center">
+            <div style="font-size:11px;overflow-wrap:anywhere;margin-bottom:5px">${euro(value)}</div>
+            <div style="height:${height}px;max-width:48px;margin:auto;background:${value < 0 ? 'var(--red)' : 'var(--accent)'};border-radius:5px 5px 0 0"></div>
+            <div style="font-size:10px;margin-top:6px">${label}</div>
+          </div>`;
+      }).join('')}
+    </div>`;
+}
   document.getElementById('statsMonthly').innerHTML = months.length
     ? months.map(m => {
         const label = new Date(Number(m.slice(0,4)), Number(m.slice(5,7))-1, 1)
@@ -296,6 +321,48 @@ function renderStatistics(){
       }).join('')
     : '<div class="empty">Todavía no hay ventas con fecha para mostrar.</div>';
 
+  
+const accumulatedChart = document.getElementById('chartAccumulated');
+
+if (!months.length) {
+  accumulatedChart.innerHTML = '<div class="empty">No hay datos para representar.</div>';
+} else {
+  let running = 0;
+  const values = months.map(m => {
+    running += monthly[m];
+    return { month: m, value: running };
+  });
+
+  const minValue = Math.min(0, ...values.map(x => x.value));
+  const maxValue = Math.max(1, ...values.map(x => x.value));
+  const range = Math.max(1, maxValue - minValue);
+  const width = 600;
+  const height = 220;
+  const pad = 28;
+
+  const points = values.map((x, i) => {
+    const px = values.length === 1
+      ? width / 2
+      : pad + i * (width - 2 * pad) / (values.length - 1);
+    const py = height - pad - (x.value - minValue) / range * (height - 2 * pad);
+    return `${px},${py}`;
+  }).join(' ');
+
+  accumulatedChart.innerHTML = `
+    <div style="width:100%;overflow-x:auto">
+      <svg viewBox="0 0 ${width} ${height}" style="width:100%;min-width:300px;height:auto;display:block" role="img" aria-label="Evolución del beneficio acumulado">
+        <line x1="${pad}" y1="${height-pad}" x2="${width-pad}" y2="${height-pad}" stroke="var(--border)" />
+        <polyline points="${points}" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" />
+        ${values.map((x,i) => {
+          const px = values.length === 1 ? width/2 : pad + i*(width-2*pad)/(values.length-1);
+          const py = height-pad-(x.value-minValue)/range*(height-2*pad);
+          const label = new Date(Number(x.month.slice(0,4)),Number(x.month.slice(5,7))-1,1)
+            .toLocaleDateString('es-ES',{month:'short',year:'2-digit'});
+          return `<circle cx="${px}" cy="${py}" r="4" fill="var(--accent)"><title>${label}: ${euro(x.value)}</title></circle>`;
+        }).join('')}
+      </svg>
+    </div>`;
+}
   document.getElementById('statsAccumulated').innerHTML = months.length
     ? months.map(m => {
         accumulated += monthly[m];
