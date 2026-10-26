@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MENTAL HEROES · Cálculo mental</title>
+<style>
+:root{--bg:#090d25;--panel:#151b3d;--panel2:#202950;--cyan:#43e7ff;--pink:#ff4fba;--yellow:#ffe66d;--green:#5dffb0;--text:#f5f7ff;--muted:#aab4de}
+*{box-sizing:border-box} body{margin:0;min-height:100vh;color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:radial-gradient(ellipse at 50% -15%,#293c80 0%,#111637 42%,var(--bg) 78%);overflow-x:hidden}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.24;background-image:radial-gradient(#fff 1px,transparent 1px);background-size:37px 37px}
+.wrap{max-width:1050px;margin:auto;padding:22px 16px 40px;position:relative}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px}
+.logo{font-weight:1000;letter-spacing:2px;font-size:clamp(1.15rem,3vw,1.8rem);line-height:1}.logo span{color:var(--cyan);text-shadow:0 0 18px #43e7ff88}.tag{font-size:.72rem;color:var(--yellow);letter-spacing:2px;font-weight:800;margin-top:6px}
+.badge{border:1px solid #4e5a91;background:#111936;border-radius:99px;padding:8px 12px;color:var(--muted);font-size:.8rem;white-space:nowrap}
+.grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(260px,.8fr);gap:18px;align-items:start}
+.card{background:linear-gradient(145deg,#1b234aee,#111733f5);border:1px solid #46518a;border-radius:22px;box-shadow:0 14px 40px #0004,inset 0 1px #ffffff0b;overflow:hidden}
+.game{padding:clamp(16px,3vw,28px);text-align:center;position:relative}
+.game:after{content:"";position:absolute;top:-70px;right:-50px;width:190px;height:190px;border-radius:50%;background:#43e7ff0c;pointer-events:none}
+.topline{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:20px}
+.level{font-size:.75rem;letter-spacing:1.5px;color:var(--cyan);font-weight:900}.timer{font-variant-numeric:tabular-nums;font-size:1.15rem;font-weight:900}
+.progress{height:8px;background:#080d24;border-radius:99px;overflow:hidden;margin-bottom:25px;border:1px solid #303b6b}.bar{height:100%;width:0;background:linear-gradient(90deg,var(--cyan),#9c7bff,var(--pink));transition:width .3s;box-shadow:0 0 14px #43e7ff77}
+.hero{font-size:.8rem;color:var(--muted);letter-spacing:2px;font-weight:800;margin-bottom:10px}
+.equation{font-size:clamp(3.3rem,10vw,6rem);font-weight:1000;line-height:1.1;letter-spacing:1px;margin:8px 0 20px;text-shadow:0 0 25px #43e7ff30;min-height:1.2em}
+.equation .op{color:var(--pink);padding:0 8px}.equation .equals{color:var(--cyan)}
+.answer{height:62px;width:min(100%,330px);margin:0 auto 16px;border:2px solid #4c5a94;background:#090e27;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:900;letter-spacing:4px;color:var(--yellow);box-shadow:inset 0 3px 12px #0007}
+.answer.empty{color:#64709d}.answer.shake{animation:shake .25s}
+.keyboard{width:min(100%,330px);margin:auto;display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.key{border:1px solid #53629d;background:linear-gradient(#303b6e,#20294f);color:white;border-radius:13px;min-height:55px;font-size:1.45rem;font-weight:900;cursor:pointer;box-shadow:0 4px 0 #0a102b;transition:transform .08s,filter .1s;touch-action:manipulation}
+.key:active{transform:translateY(3px);box-shadow:0 1px 0 #0a102b;filter:brightness(1.3)}.key.action{font-size:.9rem;letter-spacing:.5px}.key.go{background:linear-gradient(#40e7ff,#1599c8);color:#06132e;border-color:#8df3ff}.key.del{background:linear-gradient(#a44289,#712c70)}
+.key:disabled{opacity:.4;cursor:not-allowed}
+.feedback{height:29px;margin:12px 0 0;font-weight:900;font-size:.95rem}.feedback.good{color:var(--green)}.feedback.bad{color:#ff7199}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:22px}
+.stat{background:#0c1230;border:1px solid #303b6b;border-radius:13px;padding:12px 5px}.stat strong{display:block;font-size:1.4rem;color:var(--yellow);font-variant-numeric:tabular-nums}.stat span{font-size:.68rem;color:var(--muted);letter-spacing:1px;font-weight:800}
+.side{padding:20px}.side h2{margin:0 0 14px;font-size:1.05rem;letter-spacing:.5px}.side h2 span{color:var(--cyan)}
+.field{display:flex;flex-direction:column;gap:6px;margin:12px 0}.field label{font-size:.75rem;color:var(--muted);font-weight:800;letter-spacing:.8px}.field input{width:100%;border:1px solid #46518a;background:#090e27;border-radius:10px;padding:12px;color:white;font:inherit;outline:none}.field input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px #43e7ff1e}
+.primary,.secondary{border:0;border-radius:12px;padding:13px 15px;font:inherit;font-weight:1000;cursor:pointer;letter-spacing:.4px;transition:transform .1s,filter .1s}.primary{width:100%;background:linear-gradient(100deg,var(--cyan),#78ffcb);color:#06132e;box-shadow:0 5px 0 #177d96}.primary:active,.secondary:active{transform:translateY(2px)}.secondary{background:#29335f;color:#fff;border:1px solid #5966a1}
+.note{font-size:.78rem;color:var(--muted);line-height:1.5;margin:12px 0 0}
+.records{margin-top:18px}.records-head{display:flex;justify-content:space-between;align-items:center;gap:8px}.records-head h2{margin-bottom:10px}.records-head button{background:none;border:0;color:#9aa7d8;text-decoration:underline;cursor:pointer;font-size:.72rem}
+.record-list{display:flex;flex-direction:column;gap:8px;max-height:310px;overflow:auto}.record{display:grid;grid-template-columns:30px 1fr auto;align-items:center;gap:9px;background:#0c1230;border:1px solid #303b6b;border-radius:12px;padding:10px}.rank{font-size:1.15rem}.rname{font-weight:900;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rmeta{font-size:.68rem;color:var(--muted);margin-top:3px}.rscore{text-align:right;font-weight:1000;color:var(--yellow)}.rscore small{display:block;font-size:.65rem;color:var(--muted);font-weight:700}
+.empty-records{text-align:center;color:var(--muted);font-size:.82rem;padding:18px 6px;border:1px dashed #3c4778;border-radius:12px}
+.overlay{position:fixed;inset:0;background:#05081bdc;backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:18px;z-index:10}.overlay.show{display:flex}.modal{max-width:430px;width:100%;text-align:center;padding:28px 24px;background:linear-gradient(145deg,#222d60,#111733);border:1px solid #6574bd;border-radius:24px;box-shadow:0 25px 90px #0009}.trophy{font-size:3.4rem}.modal h2{font-size:1.8rem;margin:6px 0}.modal p{color:var(--muted);line-height:1.5}.final-score{font-size:3.5rem;color:var(--yellow);font-weight:1000}.modal .primary{margin-top:14px}.modal .secondary{margin-top:10px;width:100%}
+.smallprint{text-align:center;color:#727eaf;font-size:.7rem;margin-top:22px}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+@keyframes pop{0%{transform:scale(.92)}60%{transform:scale(1.06)}100%{transform:scale(1)}}.pop{animation:pop .22s}
+@media(max-width:760px){.grid{grid-template-columns:1fr}.side{order:2}.game{padding:17px}.key{min-height:52px}.topline{margin-bottom:15px}.equation{margin-bottom:15px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><div><div class="logo">MENTAL <span>HEROES</span></div><div class="tag">ARCADE DE CÁLCULO · NIVEL 01</div></div><div class="badge">★ ENTRENA TU MENTE</div></header>
+<div class="grid">
+<section class="card game">
+  <div class="topline"><div class="level" id="roundLabel">PREPARADO PARA JUGAR</div><div class="timer" id="timer">00:00.0</div></div>
+  <div class="progress"><div class="bar" id="bar"></div></div>
+  <div class="hero" id="heroLabel">10 RETOS · 5 SUMAS + 5 RESTAS</div>
+  <div class="equation" id="equation"><span style="color:var(--cyan)">?</span> <span class="op">+</span> <span style="color:var(--pink)">?</span></div>
+  <div class="answer empty" id="answer" aria-live="polite">TU RESPUESTA</div>
+  <div class="keyboard" id="keyboard">
+    <button class="key" data-key="1">1</button><button class="key" data-key="2">2</button><button class="key" data-key="3">3</button>
+    <button class="key" data-key="4">4</button><button class="key" data-key="5">5</button><button class="key" data-key="6">6</button>
+    <button class="key" data-key="7">7</button><button class="key" data-key="8">8</button><button class="key" data-key="9">9</button>
+    <button class="key del action" data-key="clear">BORRAR</button><button class="key" data-key="0">0</button><button class="key go action" data-key="enter">OK ✓</button>
+  </div>
+  <div class="feedback" id="feedback">Pulsa «EMPEZAR PARTIDA» para activar el reto.</div>
+  <div class="stats">
+    <div class="stat"><strong id="score">0</strong><span>PUNTOS</span></div>
+    <div class="stat"><strong id="hits">0/10</strong><span>ACIERTOS</span></div>
+    <div class="stat"><strong id="streak">0</strong><span>RACHA 🔥</span></div>
+  </div>
+</section>
+<aside>
+  <section class="card side">
+    <h2><span>01.</span> IDENTIFÍCATE, HÉROE</h2>
+    <div class="field"><label for="playerName">NOMBRE DEL JUGADOR</label><input id="playerName" maxlength="18" placeholder="Escribe tu nombre" autocomplete="nickname"></div>
+    <button class="primary" id="startBtn">▶ EMPEZAR PARTIDA</button>
+    <p class="note">Resuelve 10 operaciones lo más rápido posible. Cada acierto suma <b style="color:var(--green)">+2 puntos</b> y cada fallo resta <b style="color:#ff7199">−1 punto</b>. ¡Memoriza y supera tu récord!</p>
+    <div class="records">
+      <div class="records-head"><h2><span>02.</span> SALÓN DE LA FAMA</h2><button id="clearRecords">Borrar récords</button></div>
+      <div class="record-list" id="recordList"><div class="empty-records">Aún no hay récords.<br>¡Consigue el primero!</div></div>
+    </div>
+  </section>
+</aside>
+</div>
+<div class="smallprint">MENTAL HEROES · Tus récords se guardan en este navegador y dispositivo.</div>
+</div>
+<div class="overlay" id="overlay" role="dialog" aria-modal="true">
+  <div class="modal"><div class="trophy" id="trophy">🏆</div><h2 id="resultTitle">¡PARTIDA COMPLETADA!</h2><p id="resultText">Tu entrenamiento ha terminado.</p><div class="final-score" id="finalScore">20</div><div style="color:var(--cyan);font-weight:900;letter-spacing:2px">PUNTOS</div><p id="resultStats"></p><button class="primary" id="againBtn">↻ JUGAR OTRA VEZ</button><button class="secondary" id="closeBtn">VER TABLA DE RÉCORDS</button></div>
+</div>
+<script>
+(()=> {
+'use strict';
+const $=id=>document.getElementById(id);
+const STORE='mentalHeroesRecords_v1', NAMEKEY='mentalHeroesPlayer_v1';
+let questions=[],index=0,score=0,hits=0,streak=0,bestStreak=0,input='',started=false,ended=false,startAt=0,timerId=null,records=[],penaltySeconds=0;
+function loadRecords(){try{const x=JSON.parse(localStorage.getItem(STORE)||'[]');records=Array.isArray(x)?x:[]}catch(e){records=[]}renderRecords()}
+function saveRecords(){try{localStorage.setItem(STORE,JSON.stringify(records.slice(0,50)))}catch(e){feedback('No se pudieron guardar los récords en este navegador.','bad')}}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function renderRecords(){
+ records.forEach(r=>{if(typeof r.finalMs!=='number')r.finalMs=typeof r.ms==='number'?r.ms:0});
+ records.sort((a,b)=>a.finalMs-b.finalMs||b.hits-a.hits||b.score-a.score);
+ const box=$('recordList');
+ if(!records.length){box.innerHTML='<div class="empty-records">Aún no hay récords.<br>¡Consigue el primero!</div>';return}
+ box.innerHTML=records.slice(0,10).map((r,i)=>`<div class="record"><div class="rank">${i===0?'👑':i===1?'🥈':i===2?'🥉':'⭐'}</div><div><div class="rname">${escapeHtml(r.name)}</div><div class="rmeta">${escapeHtml(r.date)} · ${r.hits}/10 aciertos</div></div><div class="rscore">${r.score}<small>${r.time}</small></div></div>`).join('');
+}
+function formatTime(ms){let t=Math.max(0,ms)/1000,m=Math.floor(t/60),s=Math.floor(t%60),d=Math.floor((t%1)*10);return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')+'.'+d}
+function elapsed(){return performance.now()-startAt}
+function tick(){if(started&&!ended)$('timer').textContent=formatTime(elapsed()+penaltySeconds*1000)}
+function feedback(msg,type=''){const f=$('feedback');f.textContent=msg;f.className='feedback '+type}
+function beep(freq=660,duration=.09,type='sine'){try{const C=window.AudioContext||window.webkitAudioContext;if(!C)return;const c=new C(),o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.value=freq;g.gain.value=.045;o.connect(g);g.connect(c.destination);o.start();g.gain.exponentialRampToValueAtTime(.001,c.currentTime+duration);o.stop(c.currentTime+duration);o.onended=()=>c.close()}catch(e){}}
+function makeQuestions(){
+ const ops=['+','+','+','+','+','−','−','−','−','−'];
+ for(let i=ops.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[ops[i],ops[j]]=[ops[j],ops[i]]}
+ return ops.map(op=>{let a=1+Math.floor(Math.random()*10),b=1+Math.floor(Math.random()*10);if(op==='−'&&b>a)[a,b]=[b,a];return {a,b,op,answer:op==='+'?a+b:a-b}})
+}
+function updateStats(){$('score').textContent=score;$('hits').textContent=hits+'/10';$('streak').textContent=streak;$('bar').style.width=(index/10*100)+'%'}
+function showQuestion(){
+ input='';$('answer').textContent='TU RESPUESTA';$('answer').classList.add('empty');
+ if(index>=10){finish();return}
+ const q=questions[index];$('roundLabel').textContent='RETO '+String(index+1).padStart(2,'0')+' / 10';
+ $('heroLabel').textContent=q.op==='+'?'MISIÓN DE SUMA':'MISIÓN DE RESTA';
+ $('equation').innerHTML=`<span style="color:var(--cyan)">${q.a}</span> <span class="op">${q.op}</span> <span style="color:var(--pink)">${q.b}</span> <span class="equals">=</span> <span style="color:var(--yellow)">?</span>`;
+ updateStats();$('bar').style.width=(index/10*100)+'%';
+}
+function start(){
+ const name=$('playerName').value.trim();if(!name){$('playerName').focus();feedback('Escribe tu nombre para guardar el récord.','bad');return}
+ try{localStorage.setItem(NAMEKEY,name)}catch(e){}
+ questions=makeQuestions();index=0;score=0;hits=0;streak=0;bestStreak=0;input='';penaltySeconds=0;started=true;ended=false;startAt=performance.now();
+ clearInterval(timerId);timerId=setInterval(tick,100);$('overlay').classList.remove('show');$('startBtn').textContent='↻ REINICIAR PARTIDA';$('keyboard').querySelectorAll('button').forEach(b=>b.disabled=false);
+ feedback('¡Vamos! Responde con el teclado y pulsa OK.');showQuestion();tick();
+}
+function press(key){
+ if(!started||ended)return;
+ if(key==='clear'){input='';paintInput();return}
+ if(key==='enter'){submit();return}
+ if(!/^\d$/.test(key)||input.length>=3)return;
+ input+=key;paintInput();
+}
+function paintInput(){$('answer').textContent=input||'TU RESPUESTA';$('answer').classList.toggle('empty',!input)}
+function submit(){
+ if(!input){feedback('Introduce un resultado antes de continuar.','bad');$('answer').classList.add('shake');setTimeout(()=>$('answer').classList.remove('shake'),300);return}
+ const q=questions[index],correct=Number(input)===q.answer;
+ if(correct){score+=2;hits++;streak++;bestStreak=Math.max(bestStreak,streak);feedback(['¡BRILLANTE! +2 puntos','¡ACIERTO! +2 puntos','¡Combo perfecto! +2 puntos'][Math.floor(Math.random()*3)],'good');beep(760,.1);$('answer').classList.add('pop')}
+ else{score-=1;streak=0;penaltySeconds+=5;feedback('¡Casi! Era '+q.answer+' · −1 punto · +5 s de penalización','bad');beep(180,.15,'triangle')}
+ index++;updateStats();
+ setTimeout(()=>{if(index<10)showQuestion();else finish()},correct?350:850);
+}
+function finish(){
+ ended=true;started=false;clearInterval(timerId);const rawMs=elapsed(),ms=rawMs+penaltySeconds*1000,name=$('playerName').value.trim()||'Jugador';
+ const now=new Date(),date=now.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'});
+ const record={name,date,stamp:now.toISOString(),score,hits,time:formatTime(ms),ms,finalMs:ms,penalties:penaltySeconds,bestStreak};
+ records.push(record);records.sort((a,b)=>a.finalMs-b.finalMs||b.hits-a.hits||b.score-a.score);records=records.slice(0,50);saveRecords();renderRecords();
+ const isBest=records[0]===record;
+ $('trophy').textContent=score>=15?'🏆':score>=8?'🥇':'🎮';$('resultTitle').textContent=isBest?'¡NUEVO RÉCORD!':'¡PARTIDA COMPLETADA!';
+ $('resultText').textContent=score>=15?'¡Nivel superado! Tu mente va a toda velocidad.':score>=8?'¡Buen trabajo! Sigue practicando para subir de nivel.':'¡Entrenamiento terminado! Cada partida te ayuda a mejorar.';
+ $('finalScore').textContent=score;$('resultStats').textContent=`Tiempo final: ${formatTime(ms)} (incluye ${penaltySeconds} s de penalización) · Aciertos: ${hits}/10 · Mejor racha: ${bestStreak}`;
+ $('bar').style.width='100%';$('roundLabel').textContent='MISIÓN COMPLETADA';$('heroLabel').textContent='¡HAS TERMINADO LOS 10 RETOS!';$('equation').innerHTML='<span style="color:var(--cyan)">¡</span><span class="op">MISIÓN</span><span style="color:var(--pink)">!</span>';
+ $('answer').textContent='FIN';$('answer').classList.remove('empty');$('keyboard').querySelectorAll('button').forEach(b=>b.disabled=true);$('overlay').classList.add('show');beep(880,.16);setTimeout(()=>beep(1100,.2),150);
+}
+$('keyboard').addEventListener('click',e=>{const b=e.target.closest('button[data-key]');if(b)press(b.dataset.key)});
+document.addEventListener('keydown',e=>{if(e.key>='0'&&e.key<='9')press(e.key);else if(e.key==='Enter')press('enter');else if(e.key==='Backspace'||e.key==='Delete')press('clear')});
+$('startBtn').addEventListener('click',start);$('againBtn').addEventListener('click',start);$('closeBtn').addEventListener('click',()=>$('overlay').classList.remove('show'));
+$('playerName').addEventListener('input',e=>{try{localStorage.setItem(NAMEKEY,e.target.value)}catch(err){}});
+$('clearRecords').addEventListener('click',()=>{if(!records.length)return;if(confirm('¿Borrar todos los récords guardados en este navegador?')){records=[];try{localStorage.removeItem(STORE)}catch(e){}renderRecords()}});
+try{$('playerName').value=localStorage.getItem(NAMEKEY)||''}catch(e){}
+loadRecords();
+})();
+</script>
+</body>
+</html>
